@@ -226,6 +226,16 @@
     border:1px solid var(--glass-border);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
     box-shadow:var(--glass-shadow);
   }
+  .train-hint{
+    margin:16px 0 0;font-size:12px;line-height:1.6;color:var(--ink3);
+    padding:14px 16px;background:var(--glass);border-radius:var(--radius-sm);
+    border:1px solid var(--glass-border);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  }
+  .train-hint b{color:var(--ink);font-weight:700}
+  .th-close{display:block;margin-top:10px;background:none;border:0;padding:0;cursor:pointer;
+    font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);font-weight:600}
+  .list-more{margin-top:12px;text-align:center;font-family:var(--mono);font-size:9px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--muted);padding:8px}
 
   /* TABS */
   .tabs{display:flex;gap:8px;margin:22px 0 4px;padding:0}
@@ -254,7 +264,7 @@
   .swipe{
     position:absolute;width:100%;height:100%;background:var(--glass);border:1px solid var(--glass-border);
     border-radius:var(--radius-lg);display:flex;flex-direction:column;cursor:grab;padding:28px 24px;
-    will-change:transform;user-select:none;touch-action:none;
+    will-change:transform;user-select:none;touch-action:pan-y;
     transition:all var(--t) var(--ease);
     backdrop-filter:blur(20px);
     -webkit-backdrop-filter:blur(20px);
@@ -477,6 +487,10 @@
         <button id="dir-prod" onclick="setDir('prod')">Воспроизведение</button>
       </div>
       <div class="ctx" id="trainCtx"></div>
+      <div class="train-hint" id="trainHint" style="display:none">
+        <b>Как запоминать.</b> Свайп <b>вправо</b> «Помню» — слово уходит на бóльший интервал и вернётся позже (1 → 3 → 7 → 16… дней). Свайп <b>влево</b> «Не помню» — сбрасывается и повторится снова уже сегодня. Чем увереннее помнишь, тем реже встречаешь. «Легко» — кнопкой внизу, перескакивает через интервал.
+        <button class="th-close" onclick="dismissHint()">Понятно</button>
+      </div>
       <div class="stage" id="stage"></div>
       <div class="controls" id="controls"></div>
     </section>
@@ -1675,8 +1689,11 @@ function renderList(){
   if(listDeck!=='all') list = list.filter(c=>c.deck===listDeck);
   if(q) list = list.filter(c=>(c.word+c.translation+(c.example||'')).toLowerCase().includes(q));
   const el = document.getElementById('words'); el.innerHTML='';
-  if(!list.length){ el.innerHTML='<div class="empty"><div class="mk">⌕</div><p>Пока нет слов в этой категории</p></div>'; return; }
-  list.forEach(c=>{
+  const total = list.length;
+  if(!total){ el.innerHTML='<div class="empty"><div class="mk">⌕</div><p>'+(q?'Ничего не найдено':'Пока нет слов в этой категории')+'</p></div>'; return; }
+  const CAP = 60;
+  const frag = document.createDocumentFragment();
+  list.slice(0, CAP).forEach(c=>{
     const d=DECKS[c.deck], due=(c.due||0)<=now();
     const div=document.createElement('div'); div.className='litem';
     div.innerHTML = `
@@ -1689,9 +1706,15 @@ function renderList(){
       <button class="ib edit" title="Изменить">${IC.edit}</button>
       <button class="ib del" title="Удалить">${IC.del}</button>`;
     div.querySelector('.edit').onclick=()=>startEdit(c.id);
-    div.querySelector('.del').onclick=()=>{ if(confirm('Удалить «'+c.word+'»?')){ state.cards=state.cards.filter(x=>x.id!==c.id); save(); renderList(); renderHomeStatsSilent(); } };
-    el.appendChild(div);
+    div.querySelector('.del').onclick=()=>{ if(confirm('Удалить «'+c.word+'»?')){ state.cards=state.cards.filter(x=>x.id!==c.id); save(); renderList(); } };
+    frag.appendChild(div);
   });
+  el.appendChild(frag);
+  if(total > CAP){
+    const more=document.createElement('div'); more.className='list-more';
+    more.textContent = `Показаны ${CAP} из ${total}. Уточни поиском, чтобы найти нужное слово.`;
+    el.appendChild(more);
+  }
 }
 function renderHomeStatsSilent(){ /* no-op placeholder for future */ }
 
@@ -1720,10 +1743,10 @@ function setTrainDeck(id){
   trainDeck=id; state.trainDeck=id; save();
   markTrainDeck(); startTrain();
 }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function buildQueue(){
   let pool = trainDeck ? cardsOf(trainDeck) : state.cards.slice();
-  let due = dueCards(pool).sort((a,b)=> (a.due||0)-(b.due||0));
-  return due.slice(0, 60);
+  return shuffle(dueCards(pool)).slice(0, 60);   // перемешиваем, чтобы не шли по алфавиту
 }
 function startTrain(){
   rolloverCheck();
@@ -1734,8 +1757,10 @@ function startTrain(){
   const d = trainDeck ? DECKS[trainDeck] : null;
   const arrow = dir==='recog' ? 'слово → перевод' : 'перевод → слово';
   document.getElementById('trainCtx').textContent = (d? d.name : 'Все языки')+' · '+arrow;
+  const hint=document.getElementById('trainHint'); if(hint) hint.style.display = state.hintSeen ? 'none' : '';
   queue = buildQueue(); flipped=false; renderStage();
 }
+function dismissHint(){ state.hintSeen=true; save(); const h=document.getElementById('trainHint'); if(h) h.style.display='none'; }
 function renderStage(){
   const stage=document.getElementById('stage'), ctrls=document.getElementById('controls');
   stage.innerHTML=''; ctrls.innerHTML='';
@@ -1805,37 +1830,37 @@ function flipTop(){
 }
 function bindSwipe(el){
   if(!el) return;
-  let sx=0, sy=0, dx=0, dy=0, drag=false, moved=false;
-  const bKnow=el.querySelector('.badge.know'), bForgot=el.querySelector('.badge.forgot'), bEasy=el.querySelector('.badge.easy');
-  const down=e=>{ drag=true; moved=false; sx=e.clientX; sy=e.clientY; el.style.transition='none';
+  let sx=0, sy=0, dx=0, dy=0, drag=false, moved=false, horiz=false;
+  const bKnow=el.querySelector('.badge.know'), bForgot=el.querySelector('.badge.forgot');
+  const down=e=>{ drag=true; moved=false; horiz=false; sx=e.clientX; sy=e.clientY; el.style.transition='none';
     try{ el.setPointerCapture(e.pointerId); }catch(_){} };
   const move=e=>{
     if(!drag) return;
     dx=e.clientX-sx; dy=e.clientY-sy;
-    if(!moved && (Math.abs(dx)>6 || Math.abs(dy)>6)) moved=true;
-    if(moved && e.cancelable) e.preventDefault();
-    el.style.transform=`translate(${dx}px,${dy}px) rotate(${dx/28}deg)`;
-    bKnow.style.opacity = dx>0 ? Math.min(dx/90,1):0;
+    // определяем ось один раз: если палец повёл вверх/вниз — это прокрутка, карту не трогаем
+    if(!moved && (Math.abs(dx)>6 || Math.abs(dy)>6)){ moved=true; horiz=Math.abs(dx) > Math.abs(dy); }
+    if(!horiz) return;                 // вертикаль отдаём странице (скролл / переключение языка)
+    if(e.cancelable) e.preventDefault();
+    el.style.transform=`translateX(${dx}px) rotate(${dx/30}deg)`;   // только X
+    bKnow.style.opacity   = dx>0 ? Math.min(dx/90,1):0;
     bForgot.style.opacity = dx<0 ? Math.min(-dx/90,1):0;
-    bEasy.style.opacity = (dy<-40 && Math.abs(dx)<60) ? Math.min(-dy/90,1):0;
   };
   const up=e=>{
     if(!drag) return; drag=false;
     try{ el.releasePointerCapture(e.pointerId); }catch(_){}
     el.style.transition='transform .18s cubic-bezier(0,0,.2,1), opacity .18s cubic-bezier(0,0,.2,1)';
-    const TH=85;
-    if(dy < -TH && Math.abs(dx) < 70) finishSwipe(el,'up');
-    else if(dx > TH) finishSwipe(el,'right');
-    else if(dx < -TH) finishSwipe(el,'left');
-    else { el.style.transform=''; bKnow.style.opacity=bForgot.style.opacity=bEasy.style.opacity=0; }
-    dx=dy=0;
+    const TH=80;
+    if(horiz && dx > TH) finishSwipe(el,'right');
+    else if(horiz && dx < -TH) finishSwipe(el,'left');
+    else { el.style.transform=''; bKnow.style.opacity=bForgot.style.opacity=0; }
+    dx=dy=0; horiz=false;
   };
   el.addEventListener('pointerdown',down);
   el.addEventListener('pointermove',move);
   el.addEventListener('pointerup',up);
   el.addEventListener('pointercancel',up);
-  // не считать перетаскивание за тап (иначе карта переворачивается после свайпа)
-  el.addEventListener('click', e=>{ if(moved){ e.stopPropagation(); e.preventDefault(); moved=false; } }, true);
+  // перетаскивание не считаем тапом (иначе карта переворачивается после свайпа)
+  el.addEventListener('click', e=>{ if(moved && horiz){ e.stopPropagation(); e.preventDefault(); moved=false; } }, true);
 }
 function animateOut(dirn){
   const el=document.querySelector('#stage .swipe:last-child'); if(!el) return;
@@ -1848,19 +1873,24 @@ function finishSwipe(el, dirn){
   const grade = dirn==='right'?'know' : dirn==='left'?'forgot' : 'easy';
   setTimeout(()=>applyGrade(el._card, grade), 170);
 }
+function fmtDue(days){ if(days<=0) return 'вернётся сегодня'; if(days===1) return 'снова завтра'; return 'через '+days+' '+plural(days,'день','дня','дней'); }
 function applyGrade(c, g){
   c.reps=(c.reps||0)+1; c.lastReview=now();
+  let msg;
   if(g==='forgot'){
     c.lapses=(c.lapses||0)+1; c.box=0; c.due=now();
     queue.shift(); queue.splice(Math.min(4, queue.length),0,c);
+    msg='Не помню · скоро снова';
   } else {
     c.box = Math.min((c.box||0)+(g==='easy'?2:1), INTERVALS.length-1);
     c.due = now() + INTERVALS[c.box]*DAY; queue.shift();
+    msg=(g==='easy'?'Легко':'Помню')+' · '+fmtDue(INTERVALS[c.box]);
   }
   markStudied();
   state.reviewedToday=(state.reviewedToday||0)+1;
   save(); flipped=false; renderStage();
   document.getElementById('streak').textContent=state.streak||0;
+  toast(msg);
 }
 function speak(id){
   const c = state.cards.find(x=>x.id===id); if(!c) return;
