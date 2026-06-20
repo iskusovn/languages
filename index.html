@@ -288,17 +288,17 @@
   }
   .swipe::after{
     background:
-      radial-gradient(circle at 82% 12%, rgba(255,255,255,.28), transparent 27%),
-      radial-gradient(circle at 12% 90%, rgba(255,255,255,.12), transparent 38%),
-      linear-gradient(145deg, var(--deck-deep) 0%, var(--deck-deeper) 54%, #10243a 125%);
-    opacity:0;transform:scale(1.04);
+      radial-gradient(circle at 84% 10%, rgba(var(--deck-rgb),.16), transparent 30%),
+      radial-gradient(circle at 8% 92%, rgba(var(--deck-rgb),.08), transparent 40%),
+      linear-gradient(155deg, rgba(255,255,255,.96) 0%, rgba(var(--deck-rgb),.10) 60%, rgba(var(--deck-rgb),.18) 100%);
+    opacity:0;transform:scale(1.025);filter:saturate(.92);
   }
   .swipe.deck-en{--deck-rgb:94,190,255;--deck-deep:#56BDF2;--deck-deeper:#278FD7}
   .swipe.deck-sr{--deck-rgb:58,112,255;--deck-deep:#356FEA;--deck-deeper:#1749B5}
   .swipe.deck-ar{--deck-rgb:84,211,178;--deck-deep:#48C9A5;--deck-deeper:#168B78}
   .swipe.is-back{
-    border-color:rgba(255,255,255,.18);
-    box-shadow:0 20px 54px rgba(20,65,110,.22);
+    border-color:rgba(var(--deck-rgb),.26);
+    box-shadow:0 18px 48px rgba(20,65,110,.13), inset 0 1px 0 rgba(255,255,255,.88);
     touch-action:pan-y;
   }
   .swipe.is-back::before{opacity:0;transform:scale(.97)}
@@ -311,8 +311,8 @@
     font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:400;
     padding-bottom:12px;border-bottom:1px solid var(--line);
   }
-  .swipe.is-back .top{color:rgba(255,255,255,.35);border-bottom-color:rgba(255,255,255,.08)}
-  .swipe.is-back .top span:first-child{color:#fff}
+  .swipe.is-back .top{color:var(--muted);border-bottom-color:rgba(var(--deck-rgb),.16)}
+  .swipe.is-back .top span:first-child{color:var(--ink)}
 
   /* FRONT */
   .swipe .body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:12px 0;position:relative;z-index:1;overflow:hidden}
@@ -339,26 +339,26 @@
     text-align:center;padding:18px 10px 22px;position:relative;
   }
   .face.back .tr{
-    font-family:var(--sans);font-size:clamp(28px,8vw,42px);font-weight:800;color:#fff;
+    font-family:var(--sans);font-size:clamp(28px,8vw,42px);font-weight:800;color:var(--ink);
     letter-spacing:-.035em;line-height:1.08;overflow-wrap:anywhere;word-break:break-word;max-width:96%;
   }
   .face.back .sub{
-    font-family:var(--sans);font-size:clamp(14px,4vw,18px);font-weight:600;color:rgba(255,255,255,.62);
+    font-family:var(--sans);font-size:clamp(14px,4vw,18px);font-weight:600;color:var(--ink3);
     line-height:1.25;margin-top:12px;overflow-wrap:anywhere;word-break:break-word;max-width:92%;
   }
   .face.back .details{
-    flex:none;border-top:1px solid rgba(255,255,255,.14);padding:14px 2px 0;
+    flex:none;border-top:1px solid rgba(var(--deck-rgb),.18);padding:14px 2px 0;
     max-height:42%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
     scrollbar-width:none;
   }
   .face.back .details::-webkit-scrollbar{display:none}
   .face.back .sect{padding:0 0 12px;margin:0}
-  .face.back .sect + .sect{border-top:1px solid rgba(255,255,255,.09);padding-top:12px}
-  .face.back .lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.34);font-weight:600;display:block;margin-bottom:7px}
-  .face.back .ex{font-family:var(--sans);font-size:13px;color:rgba(255,255,255,.82);line-height:1.45;max-width:100%}
-  .face.back .ex .hl{font-weight:700;color:#fff;border-bottom:1px solid rgba(255,255,255,.25)}
-  .face.back .extr{font-size:11.5px;color:rgba(255,255,255,.46);line-height:1.45;margin-top:5px}
-  .face.back .notesblk{font-size:12px;color:rgba(255,255,255,.68);line-height:1.45}
+  .face.back .sect + .sect{border-top:1px solid rgba(var(--deck-rgb),.12);padding-top:12px}
+  .face.back .lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600;display:block;margin-bottom:7px}
+  .face.back .ex{font-family:var(--sans);font-size:13px;color:var(--ink2);line-height:1.45;max-width:100%}
+  .face.back .ex .hl{font-weight:700;color:var(--ink);border-bottom:1px solid rgba(var(--deck-rgb),.28)}
+  .face.back .extr{font-size:11.5px;color:var(--ink3);line-height:1.45;margin-top:5px}
+  .face.back .notesblk{font-size:12px;color:var(--ink2);line-height:1.45}
   .face.back .spk{position:absolute;right:0;bottom:0;margin:0}
 
   .badge{position:absolute;top:24px;padding:8px 14px;border:0;border-radius:var(--radius-sm);z-index:2;
@@ -368,11 +368,11 @@
   .badge.forgot{right:20px;background:var(--danger);box-shadow:0 4px 16px var(--danger-soft)}
   .badge.easy{top:auto;bottom:120px;left:50%;transform:translateX(-50%);background:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,0.1)}
   .spk{
-    background:none;border:1px solid rgba(255,255,255,.25);color:#fff;width:42px;height:42px;border-radius:var(--radius-sm);align-self:flex-start;flex:none;
+    background:rgba(255,255,255,.52);border:1px solid rgba(var(--deck-rgb),.22);color:var(--ink2);width:42px;height:42px;border-radius:var(--radius-sm);align-self:flex-start;flex:none;
     cursor:pointer;display:flex;align-items:center;justify-content:center;
     transition:all var(--t) var(--ease);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
   }
-  .spk:active{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.4)}
+  .spk:active{background:rgba(var(--deck-rgb),.12);border-color:rgba(var(--deck-rgb),.35)}
 
   .controls{display:flex;gap:16px;justify-content:center;align-items:center;margin-top:32px}
   .cbtn{
@@ -545,7 +545,7 @@
 
   /* Более мягкое раскрытие перевода */
   .swipe::before,.swipe::after{
-    transition:opacity .58s var(--ease), transform .58s var(--ease), filter .58s var(--ease);
+    transition:opacity .78s var(--ease), transform .78s var(--ease), filter .78s var(--ease);
   }
   .swipe .body{
     transition:opacity .24s ease, transform .34s var(--ease), filter .34s ease;
@@ -1646,6 +1646,52 @@ const SEED_SR = [
   {w:"žvakati/žvačem",t:"жевать"}
 ];
 
+
+const SEED_AR = [
+  {w:"يَقْرَأُ",t:"читать",ex:"هُوَ يَقْرَأُ كِتَابًا.",exTr:"Он читает книгу.",n:"yaqra'u"},
+  {w:"يُحِبُّ",t:"любить",ex:"أَنَا أُحِبُّ القَهْوَةَ.",exTr:"Я люблю кофе.",n:"yuhibbu"},
+  {w:"يَذْهَبُ",t:"идти, ехать",ex:"أَنَا أَذْهَبُ إِلَى العَمَلِ.",exTr:"Я иду на работу.",n:"yadhhabu"},
+  {w:"يَعْمَلُ",t:"работать",ex:"هُوَ يَعْمَلُ اليَوْمَ.",exTr:"Он работает сегодня.",n:"ya'malu"},
+  {w:"يَأْكُلُ",t:"есть",ex:"أَنَا آكُلُ خُبْزًا.",exTr:"Я ем хлеб.",n:"ya'kulu"},
+  {w:"يَكْتُبُ",t:"писать",ex:"هِيَ تَكْتُبُ رِسَالَةً.",exTr:"Она пишет письмо.",n:"yaktubu"},
+  {w:"يَدْرُسُ",t:"учить, изучать",ex:"أَنَا أَدْرُسُ العَرَبِيَّةَ.",exTr:"Я изучаю арабский.",n:"yadrusu"},
+  {w:"يَنَامُ",t:"спать",ex:"الطِّفْلُ يَنَامُ.",exTr:"Ребёнок спит.",n:"yanāmu"},
+  {w:"يَبْدَأُ",t:"начинать",ex:"الدَّرْسُ يَبْدَأُ الآنَ.",exTr:"Урок начинается сейчас.",n:"yabda'u"},
+  {w:"يَنْتَهِي",t:"заканчивать, заканчиваться",ex:"العَمَلُ يَنْتَهِي السَّاعَةَ خَمْسَةً.",exTr:"Работа заканчивается в пять часов.",n:"yantahī"},
+  {w:"أُرِيدُ",t:"я хочу",ex:"أُرِيدُ قَهْوَةً.",exTr:"Я хочу кофе.",n:"urīdu"},
+  {w:"أَنْوِي",t:"я собираюсь, намереваюсь",ex:"أَنْوِي أَنْ أَدْرُسَ اليَوْمَ.",exTr:"Я собираюсь учиться сегодня.",n:"anwī"},
+  {w:"عِنْدِي",t:"у меня есть",ex:"عِنْدِي كِتَابٌ.",exTr:"У меня есть книга.",n:"'indī"},
+  {w:"لَيْسَ عِنْدِي",t:"у меня нет",ex:"لَيْسَ عِنْدِي وَقْتٌ.",exTr:"У меня нет времени.",n:"laysa 'indī"},
+  {w:"كَانَ",t:"было; был",ex:"كَانَ اليَوْمُ جَمِيلًا.",exTr:"День был хорошим.",n:"kāna"},
+  {w:"كَثِيرًا",t:"много; очень",ex:"أَدْرُسُ كَثِيرًا.",exTr:"Я много учусь.",n:"kathīran"},
+  {w:"كَمْ",t:"сколько",ex:"كَمْ كِتَابًا عِنْدَكَ؟",exTr:"Сколько у тебя книг?",n:"kam"},
+  {w:"يَجِبُ",t:"надо, необходимо",ex:"يَجِبُ أَنْ أَعْمَلَ.",exTr:"Мне надо работать.",n:"yajibu"},
+  {w:"التَّالِي",t:"следующий",ex:"الأُسْبُوعُ التَّالِي.",exTr:"Следующая неделя.",n:"at-tālī"},
+  {w:"السَّابِق",t:"предыдущий",ex:"الشَّهْرُ السَّابِقُ.",exTr:"Предыдущий месяц.",n:"as-sābiq"},
+  {w:"سَنَة",t:"год",ex:"هٰذِهِ سَنَةٌ جَدِيدَةٌ.",exTr:"Это новый год.",n:"sana"},
+  {w:"يَوْم",t:"день",ex:"هٰذَا يَوْمٌ جَمِيلٌ.",exTr:"Это хороший день.",n:"yawm"},
+  {w:"أُسْبُوع",t:"неделя",ex:"أَعْمَلُ أُسْبُوعًا وَاحِدًا.",exTr:"Я работаю одну неделю.",n:"usbū'"},
+  {w:"شَهْر",t:"месяц",ex:"هٰذَا الشَّهْرُ طَوِيلٌ.",exTr:"Этот месяц длинный.",n:"shahr"},
+  {w:"أُخَطِّطُ",t:"я планирую",ex:"أُخَطِّطُ لِلسَّفَرِ.",exTr:"Я планирую путешествие.",n:"ukhattitu"},
+  {w:"عَادَةً",t:"обычно",ex:"عَادَةً أَنَامُ مُبَكِّرًا.",exTr:"Обычно я сплю рано.",n:"'ādatan"},
+  {w:"مَتَى",t:"когда",ex:"مَتَى يَبْدَأُ الدَّرْسُ؟",exTr:"Когда начинается урок?",n:"matā"}
+];
+
+function seedArabicDeck(){
+  if(state.seededAR_v1) return;
+  const have = new Set(state.cards.filter(c=>c.deck==='ar').map(c=>c.word));
+  SEED_AR.forEach((v,i)=>{
+    if(have.has(v.w)) return;
+    state.cards.push({
+      id:'ar'+i+'_'+uid(), deck:'ar', word:v.w, translation:v.t,
+      example:v.ex, exampleTr:v.exTr, notes:v.n,
+      box:0, due:now(), created:now(), reps:0, lapses:0, lastReview:null
+    });
+  });
+  state.seededAR_v1 = true;
+  save();
+}
+
 function seedDeck(){
   if(state.seededSR_v1) return;
   const have = new Set(state.cards.filter(c=>c.deck==='sr').map(c=>c.word));
@@ -1675,6 +1721,7 @@ const IC = {
 
 let state = load();
 seedDeck();
+seedArabicDeck();
 migrateInfinitive();
 let editingId = null;
 
@@ -1854,8 +1901,9 @@ function renderList(){
 function renderHomeStatsSilent(){ /* no-op placeholder for future */ }
 
 // TRAIN
-let trainDeck=(state.trainDeck!==undefined?state.trainDeck:(DECK_ORDER.find(id=>cardsOf(id).length)||null)), queue=[], dir = (state.lastDir||'recog'), flipped=false;
+let trainDeck=(state.trainDeck!==undefined?state.trainDeck:(DECK_ORDER.find(id=>cardsOf(id).length)||null)), queue=[], dir = 'recog', flipped=false;
 function setDir(d){
+  window.__trainDirectionChosen=true;
   dir=d; state.lastDir=d; save();
   document.getElementById('dir-recog').classList.toggle('on', d==='recog');
   document.getElementById('dir-prod').classList.toggle('on', d==='prod');
@@ -1885,6 +1933,9 @@ function buildQueue(){
 }
 function startTrain(){
   rolloverCheck();
+  // По умолчанию карточка всегда открывается иностранным словом.
+  // Режим «Воспроизведение» включается только вручную кнопкой.
+  if(!window.__trainDirectionChosen) dir='recog';
   const tabsEl=document.getElementById('trainDeckTabs');
   if(tabsEl && !tabsEl.children.length) initTrainTabs(); else markTrainDeck();
   document.getElementById('dir-recog').classList.toggle('on', dir==='recog');
