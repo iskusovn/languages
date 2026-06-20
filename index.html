@@ -333,18 +333,33 @@
   .swipe .reveal:hover{border-color:rgba(0,0,0,0.1)}
 
   /* BACK */
-  .face.back{display:flex;flex-direction:column;align-items:stretch;width:100%}
-  .face.back .ans{margin-bottom:18px}
-  .face.back .tr{font-family:var(--sans);font-size:clamp(20px,5.5vw,28px);font-weight:800;color:#fff;letter-spacing:-.025em;line-height:1.15;overflow-wrap:anywhere;word-break:break-word}
-  .face.back .sub{font-family:var(--sans);font-size:15px;font-weight:600;color:rgba(255,255,255,.65);line-height:1.25;margin-top:8px;overflow-wrap:anywhere;word-break:break-word}
-  .face.back .sect{border-top:1px solid rgba(255,255,255,.08);padding:12px 0 0;margin-top:14px}
-  .face.back .sect:first-of-type{border-top:0;margin-top:0;padding-top:0}
-  .face.back .lbl{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.3);font-weight:500;display:block;margin-bottom:8px}
-  .face.back .ex{font-family:var(--sans);font-size:14px;color:rgba(255,255,255,.8);line-height:1.55;max-width:100%}
+  .face.back{display:flex;flex-direction:column;align-items:stretch;width:100%;height:100%;min-height:0}
+  .face.back .ans{
+    flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:18px 10px 22px;position:relative;
+  }
+  .face.back .tr{
+    font-family:var(--sans);font-size:clamp(28px,8vw,42px);font-weight:800;color:#fff;
+    letter-spacing:-.035em;line-height:1.08;overflow-wrap:anywhere;word-break:break-word;max-width:96%;
+  }
+  .face.back .sub{
+    font-family:var(--sans);font-size:clamp(14px,4vw,18px);font-weight:600;color:rgba(255,255,255,.62);
+    line-height:1.25;margin-top:12px;overflow-wrap:anywhere;word-break:break-word;max-width:92%;
+  }
+  .face.back .details{
+    flex:none;border-top:1px solid rgba(255,255,255,.14);padding:14px 2px 0;
+    max-height:42%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .face.back .details::-webkit-scrollbar{display:none}
+  .face.back .sect{padding:0 0 12px;margin:0}
+  .face.back .sect + .sect{border-top:1px solid rgba(255,255,255,.09);padding-top:12px}
+  .face.back .lbl{font-family:var(--mono);font-size:7.5px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.34);font-weight:600;display:block;margin-bottom:7px}
+  .face.back .ex{font-family:var(--sans);font-size:13px;color:rgba(255,255,255,.82);line-height:1.45;max-width:100%}
   .face.back .ex .hl{font-weight:700;color:#fff;border-bottom:1px solid rgba(255,255,255,.25)}
-  .face.back .extr{font-size:12.5px;color:rgba(255,255,255,.4);line-height:1.5;margin-top:6px}
-  .face.back .notesblk{font-size:13px;color:rgba(255,255,255,.75);line-height:1.55}
-  .face.back .spk{margin-top:18px}
+  .face.back .extr{font-size:11.5px;color:rgba(255,255,255,.46);line-height:1.45;margin-top:5px}
+  .face.back .notesblk{font-size:12px;color:rgba(255,255,255,.68);line-height:1.45}
+  .face.back .spk{position:absolute;right:0;bottom:0;margin:0}
 
   .badge{position:absolute;top:24px;padding:8px 14px;border:0;border-radius:var(--radius-sm);z-index:2;
          font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;opacity:0;color:#fff;
@@ -472,6 +487,96 @@
   }
 
   svg{stroke-linecap:round;stroke-linejoin:round}
+
+
+  /* TRAIN: полноэкранный режим без вертикального скролла */
+  body.train-mode{overflow:hidden;position:fixed;inset:0;width:100%;height:100dvh}
+  body.train-mode .app{height:100dvh;min-height:100dvh;overflow:hidden}
+  body.train-mode header{display:none}
+  body.train-mode main{
+    overflow:hidden;
+    padding:calc(env(safe-area-inset-top) + 12px) 16px calc(94px + env(safe-area-inset-bottom));
+    height:100dvh;
+    min-height:0;
+    touch-action:none;
+  }
+  body.train-mode #v-train.active{
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    min-height:0;
+    animation:trainEnter .46s var(--ease);
+  }
+  body.train-mode #trainDeckTabs,
+  body.train-mode #v-train > .tabs:not(.deck-tabs),
+  body.train-mode #trainCtx,
+  body.train-mode #trainHint{display:none!important}
+  body.train-mode .stage{
+    flex:1;
+    min-height:0;
+    height:auto;
+    margin:0;
+    touch-action:none;
+    overflow:visible;
+  }
+  body.train-mode .controls{
+    flex:none;
+    margin:14px 0 4px;
+    gap:14px;
+  }
+  body.train-mode .swipe{
+    height:100%;
+    max-height:none;
+    touch-action:none!important;
+    overscroll-behavior:none;
+    -webkit-user-drag:none;
+    transition:transform .34s var(--ease), opacity .28s var(--ease),
+               background .58s var(--ease), border-color .42s ease, box-shadow .42s ease;
+  }
+  body.train-mode .swipe .body.flipped{
+    overflow:hidden;
+    padding-top:18px;
+  }
+  body.train-mode nav{z-index:40}
+  @keyframes trainEnter{
+    from{opacity:0;transform:translateY(10px) scale(.992)}
+    to{opacity:1;transform:none}
+  }
+
+  /* Более мягкое раскрытие перевода */
+  .swipe::before,.swipe::after{
+    transition:opacity .58s var(--ease), transform .58s var(--ease), filter .58s var(--ease);
+  }
+  .swipe .body{
+    transition:opacity .24s ease, transform .34s var(--ease), filter .34s ease;
+  }
+  .swipe.flipping .body{
+    opacity:0;
+    transform:translateY(7px) scale(.975);
+    filter:blur(5px);
+  }
+  .swipe.is-back .body{animation:answerIn .52s var(--ease)}
+  .swipe.is-back .face.back .ans{animation:answerMainIn .5s var(--ease) both}
+  .swipe.is-back .face.back .details{animation:answerDetailsIn .48s .12s var(--ease) both}
+  @keyframes answerIn{
+    from{opacity:0;transform:translateY(10px);filter:blur(7px)}
+    to{opacity:1;transform:none;filter:blur(0)}
+  }
+  @keyframes answerMainIn{
+    from{opacity:0;transform:translateY(8px) scale(.985);filter:blur(5px)}
+    to{opacity:1;transform:none;filter:blur(0)}
+  }
+  @keyframes answerDetailsIn{
+    from{opacity:0;transform:translateY(12px);filter:blur(3px)}
+    to{opacity:1;transform:none;filter:blur(0)}
+  }
+
+  @media (max-width:440px){
+    body.train-mode main{padding-left:12px;padding-right:12px}
+    body.train-mode .swipe{padding:22px 18px}
+    body.train-mode .controls{margin-top:12px}
+  }
+
 </style>
 </head>
 <body>
@@ -1610,6 +1715,7 @@ const isNew = c => !c.reps;
 let view = 'home';
 function go(v){
   view = v;
+  document.body.classList.toggle('train-mode', v==='train');
   document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
   document.getElementById('v-'+v).classList.add('active');
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
@@ -1619,7 +1725,7 @@ function go(v){
   if(v==='add') initAdd();
   if(v==='list') initList();
   if(v==='train') startTrain();
-  document.querySelector('main').scrollTop = 0;
+  if(v!=='train') document.querySelector('main').scrollTop = 0;
 }
 
 // HOME
@@ -1852,7 +1958,7 @@ function flipTop(){
       const notes = c.notes
         ? `<div class="sect"><span class="lbl">Заметка</span><div class="notesblk">${esc(c.notes)}</div></div>`
         : '';
-      body.innerHTML = `<div class="face back">${ans}${ex}${notes}<button class="spk" onclick="event.stopPropagation();speak('${c.id}')">${IC.spk}</button></div>`;
+      body.innerHTML = `<div class="face back">${ans}<div class="details">${ex}${notes}</div><button class="spk" onclick="event.stopPropagation();speak('${c.id}')">${IC.spk}</button></div>`;
     } else {
       body.classList.remove('flipped');
       el.classList.remove('is-back');
@@ -1863,59 +1969,74 @@ function flipTop(){
     }
     body.onclick=(e)=>{ e.stopPropagation(); flipTop(); };
     requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.remove('flipping')));
-  },140);
+  },190);
 }
 function bindSwipe(el){
   if(!el) return;
-  let sx=0, sy=0, dx=0, dy=0, drag=false, moved=false, horiz=false;
+  let sx=0, sy=0, dx=0, dy=0, drag=false, moved=false, locked=false;
   let startedAt=0, lastX=0, lastAt=0, velocityX=0;
   const bKnow=el.querySelector('.badge.know'), bForgot=el.querySelector('.badge.forgot');
+
   const down=e=>{
     if(e.pointerType==='mouse' && e.button!==0) return;
-    drag=true; moved=false; horiz=false; dx=dy=0;
-    sx=lastX=e.clientX; sy=e.clientY; startedAt=lastAt=performance.now(); velocityX=0;
-    el.style.transition='none'; el.classList.add('dragging');
+    drag=true; moved=false; locked=false; dx=dy=0;
+    sx=lastX=e.clientX; sy=e.clientY;
+    startedAt=lastAt=performance.now(); velocityX=0;
+    el.style.transition='none';
+    el.classList.add('dragging');
+    if(e.cancelable) e.preventDefault();
     try{ el.setPointerCapture(e.pointerId); }catch(_){}
   };
+
   const move=e=>{
     if(!drag) return;
     dx=e.clientX-sx; dy=e.clientY-sy;
     const ax=Math.abs(dx), ay=Math.abs(dy);
-    // Небольшой горизонтальный жест распознаём раньше вертикального — на телефоне карточка «цепляется» легче.
-    if(!moved && (ax>4 || ay>4)){
-      moved=true;
-      horiz = ax > ay*0.72;
-    }
-    if(!horiz) return;
+
+    // В режиме карточек страница не скроллится: любой уверенный жест остаётся у карточки.
+    if(!locked && (ax>2 || ay>2)) locked=true;
+    if(!locked) return;
     if(e.cancelable) e.preventDefault();
+
+    // Вертикальную составляющую почти полностью гасим, поэтому карточка не «соскальзывает».
     const nowT=performance.now(), dt=Math.max(nowT-lastAt,1);
     velocityX=(e.clientX-lastX)/dt; lastX=e.clientX; lastAt=nowT;
-    const resistance = 1 - Math.min(Math.abs(dx)/900,.18);
+    moved = ax>3 || ay>3;
+
+    const resistance=1-Math.min(ax/1100,.12);
     const x=dx*resistance;
-    el.style.transform=`translate3d(${x}px,${Math.min(Math.abs(x)*.025,8)}px,0) rotate(${x/38}deg)`;
-    const feedback=Math.min(Math.abs(x)/58,1);
-    bKnow.style.opacity   = x<0 ? feedback:0;
-    bForgot.style.opacity = x>0 ? feedback:0;
+    const y=Math.sign(dy)*Math.min(Math.abs(dy)*.05,5);
+    el.style.transform=`translate3d(${x}px,${y}px,0) rotate(${x/48}deg)`;
+    const feedback=Math.min(ax/48,1);
+    bKnow.style.opacity=x<0?feedback:0;
+    bForgot.style.opacity=x>0?feedback:0;
   };
+
   const up=e=>{
-    if(!drag) return; drag=false; el.classList.remove('dragging');
+    if(!drag) return;
+    drag=false; el.classList.remove('dragging');
     try{ el.releasePointerCapture(e.pointerId); }catch(_){}
-    el.style.transition='transform .2s cubic-bezier(.2,.8,.2,1), opacity .2s cubic-bezier(.2,.8,.2,1)';
-    const threshold=Math.min(56, el.clientWidth*.16);
-    const flick=Math.abs(velocityX)>.42 && Math.abs(dx)>24;
-    if(horiz && (dx>threshold || (flick && velocityX>0))) finishSwipe(el,'right');
-    else if(horiz && (dx<-threshold || (flick && velocityX<0))) finishSwipe(el,'left');
-    else { el.style.transform=''; bKnow.style.opacity=bForgot.style.opacity=0; }
-    dx=dy=0; horiz=false;
+    el.style.transition='transform .28s cubic-bezier(.22,1,.36,1), opacity .24s ease';
+
+    const threshold=Math.min(42,el.clientWidth*.12);
+    const flick=Math.abs(velocityX)>.28 && Math.abs(dx)>16;
+    if(dx>threshold || (flick && velocityX>0)) finishSwipe(el,'right');
+    else if(dx<-threshold || (flick && velocityX<0)) finishSwipe(el,'left');
+    else{
+      el.style.transform='';
+      bKnow.style.opacity=bForgot.style.opacity=0;
+    }
+    dx=dy=0; locked=false;
   };
-  el.addEventListener('pointerdown',down,{passive:true});
+
+  el.addEventListener('pointerdown',down,{passive:false});
   el.addEventListener('pointermove',move,{passive:false});
-  el.addEventListener('pointerup',up,{passive:true});
-  el.addEventListener('pointercancel',up,{passive:true});
-  el.addEventListener('click', e=>{
-    if(moved && horiz){ e.stopPropagation(); e.preventDefault(); }
+  el.addEventListener('pointerup',up,{passive:false});
+  el.addEventListener('pointercancel',up,{passive:false});
+  el.addEventListener('click',e=>{
+    if(moved){e.stopPropagation();e.preventDefault();}
     moved=false;
-  }, true);
+  },true);
 }
 function animateOut(dirn){
   const el=document.querySelector('#stage .swipe:last-child'); if(!el) return;
