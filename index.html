@@ -16,16 +16,16 @@
 <style>
   :root{
     /* Pure monochrome - white to black */
-    --bg:#F5F5F7;
-    --bg-warm:#FAFAFA;
+    --bg:#EEF5FF;
+    --bg-warm:#F8FBFF;
 
     /* Glass surfaces - all grayscale */
-    --glass:rgba(255,255,255,0.55);
-    --glass-strong:rgba(255,255,255,0.82);
-    --glass-border:rgba(0,0,0,0.04);
-    --glass-border-strong:rgba(0,0,0,0.08);
-    --glass-shadow:0 4px 24px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
-    --glass-shadow-lg:0 12px 40px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.03);
+    --glass:rgba(255,255,255,0.88);
+    --glass-strong:#FFFFFF;
+    --glass-border:rgba(24,92,170,0.10);
+    --glass-border-strong:rgba(24,92,170,0.18);
+    --glass-shadow:0 8px 28px rgba(43,111,190,0.08), 0 1px 3px rgba(15,45,80,0.05);
+    --glass-shadow-lg:0 20px 56px rgba(43,111,190,0.14), 0 3px 10px rgba(15,45,80,0.06);
 
     /* Ink - pure grayscale */
     --ink:#0A0A0A;
@@ -34,10 +34,10 @@
     --muted:#A1A1A6;
 
     /* Accent - soft gray (no color) */
-    --accent:#1C1C1E;
-    --accent-light:#3A3A3C;
-    --accent-glow:rgba(0,0,0,0.06);
-    --accent-soft:rgba(0,0,0,0.03);
+    --accent:#0878D1;
+    --accent-light:#49A7F2;
+    --accent-glow:rgba(8,120,209,0.18);
+    --accent-soft:rgba(8,120,209,0.08);
 
     --danger:#8B0000;
     --danger-soft:rgba(139,0,0,0.06);
@@ -62,7 +62,10 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
   html,body{margin:0;height:100%}
   body{
-    background:var(--bg);
+    background:
+      radial-gradient(circle at 15% 0%, rgba(108,190,255,.30), transparent 34%),
+      radial-gradient(circle at 100% 35%, rgba(91,143,255,.16), transparent 32%),
+      linear-gradient(180deg,#F6FAFF 0%,var(--bg) 52%,#F8FBFF 100%);
     color:var(--ink);
     font-family:var(--sans);
     -webkit-font-smoothing:antialiased;
@@ -80,7 +83,7 @@
   header .top{display:flex;justify-content:space-between;align-items:center}
   header .streak{display:inline-flex;align-items:center;gap:8px;color:var(--ink3);white-space:nowrap;
                  font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:500}
-  header .streak::before{content:"";width:5px;height:5px;background:var(--ink);border-radius:50%;display:inline-block}
+  header .streak::before{content:"";width:5px;height:5px;background:linear-gradient(145deg,#0A1B31 0%,#102A48 55%,#0878D1 150%);border-radius:50%;display:inline-block}
   header .streak b{font-family:var(--mono);font-size:8.5px;font-weight:700;color:var(--ink)}
   header h1{font-family:var(--sans);font-weight:800;font-size:36px;letter-spacing:-.04em;margin:20px 0 0;line-height:1;color:var(--ink)}
   .rule{height:1px;background:var(--line);width:100%;margin-top:24px}
@@ -262,28 +265,47 @@
   .ctx{text-align:center;margin:20px 0 0;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:400}
   .stage{position:relative;height:clamp(360px,58dvh,560px);margin-top:20px;display:flex;align-items:center;justify-content:center}
   .swipe{
-    position:absolute;width:100%;height:100%;background:var(--glass-strong);border:1px solid var(--glass-border);
+    --deck-rgb:86,178,255;
+    --deck-deep:#248FD8;
+    --deck-deeper:#1469B4;
+    position:absolute;width:100%;height:100%;background:#FFFFFF;border:1px solid rgba(var(--deck-rgb),.22);
     border-radius:var(--radius-lg);display:flex;flex-direction:column;cursor:grab;padding:28px 24px;
     will-change:transform;user-select:none;touch-action:pan-y;backface-visibility:hidden;
     transition:transform var(--t) var(--ease), opacity var(--t) var(--ease), background var(--t) var(--ease), border-color var(--t) var(--ease);
-    box-shadow:var(--glass-shadow-lg);
+    box-shadow:var(--glass-shadow-lg), inset 0 1px 0 rgba(255,255,255,.9);
+    overflow:hidden;
+  }
+  .swipe::before, .swipe::after{
+    content:"";position:absolute;inset:0;border-radius:var(--radius-lg);pointer-events:none;
+    transition:opacity .48s var(--ease), transform .58s var(--ease);
   }
   .swipe::before{
-    content:"";position:absolute;inset:0;border-radius:var(--radius-lg);
-    background:linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 35%);
-    pointer-events:none;
+    background:
+      radial-gradient(circle at 88% 8%, rgba(var(--deck-rgb),.18), transparent 25%),
+      radial-gradient(circle at 8% 92%, rgba(var(--deck-rgb),.09), transparent 34%),
+      linear-gradient(155deg, #fff 0%, rgba(var(--deck-rgb),.075) 58%, rgba(var(--deck-rgb),.14) 100%);
+    opacity:1;transform:scale(1);
   }
+  .swipe::after{
+    background:
+      radial-gradient(circle at 82% 12%, rgba(255,255,255,.28), transparent 27%),
+      radial-gradient(circle at 12% 90%, rgba(255,255,255,.12), transparent 38%),
+      linear-gradient(145deg, var(--deck-deep) 0%, var(--deck-deeper) 54%, #10243a 125%);
+    opacity:0;transform:scale(1.04);
+  }
+  .swipe.deck-en{--deck-rgb:94,190,255;--deck-deep:#56BDF2;--deck-deeper:#278FD7}
+  .swipe.deck-sr{--deck-rgb:58,112,255;--deck-deep:#356FEA;--deck-deeper:#1749B5}
+  .swipe.deck-ar{--deck-rgb:84,211,178;--deck-deep:#48C9A5;--deck-deeper:#168B78}
   .swipe.is-back{
-    background:var(--ink);
-    border-color:rgba(255,255,255,0.08);
-    box-shadow:0 16px 48px rgba(0,0,0,0.15);
+    border-color:rgba(255,255,255,.18);
+    box-shadow:0 20px 54px rgba(20,65,110,.22);
     touch-action:pan-y;
   }
-  .swipe.is-back::after{
-    content:"";position:absolute;inset:0;border-radius:var(--radius-lg);
-    background-image:radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
-    background-size:10px 10px;opacity:.4;pointer-events:none;
-  }
+  .swipe.is-back::before{opacity:0;transform:scale(.97)}
+  .swipe.is-back::after{opacity:1;transform:scale(1)}
+  .swipe.flipping{transform:scale(.992)}
+  .swipe .body{transition:opacity .16s ease, transform .22s var(--ease), filter .22s ease}
+  .swipe.flipping .body{opacity:0;transform:translateY(4px) scale(.985);filter:blur(2px)}
   .swipe .top{
     display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;
     font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:400;
@@ -293,7 +315,7 @@
   .swipe.is-back .top span:first-child{color:#fff}
 
   /* FRONT */
-  .swipe .body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:20px;padding:16px 0;position:relative;z-index:1;overflow:hidden}
+  .swipe .body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:12px 0;position:relative;z-index:1;overflow:hidden}
   .swipe .body.flipped{align-items:stretch;justify-content:flex-start;text-align:left;gap:0;padding:20px 4px 4px;overflow-y:auto}
   .swipe .word{
     font-family:var(--sans);font-size:clamp(20px,6.5vw,38px);font-weight:800;line-height:1.1;letter-spacing:-.03em;color:var(--ink);
@@ -301,6 +323,7 @@
   }
   .swipe .ex{font-family:var(--sans);font-size:14.5px;color:var(--ink2);line-height:1.55;max-width:94%;font-weight:400}
   .swipe .ex .hl{font-weight:700;color:var(--ink2);border-bottom:0}
+  .swipe.dragging{cursor:grabbing;box-shadow:0 24px 64px rgba(43,111,190,.20),0 4px 14px rgba(15,45,80,.08)}
   .swipe .reveal{
     display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
     color:var(--ink2);font-weight:500;background:var(--accent-soft);border:1px solid var(--glass-border);padding:10px 18px;border-radius:var(--radius-pill);margin-top:8px;
@@ -490,7 +513,7 @@
       </div>
       <div class="ctx" id="trainCtx"></div>
       <div class="train-hint" id="trainHint" style="display:none">
-        <b>Как запоминать.</b> Свайп <b>влево</b> «Помню» — слово уходит на бóльший интервал и вернётся позже (1 → 3 → 7 → 16… дней). Свайп <b>вправо</b> «Не помню» — сбрасывается и повторится снова уже сегодня. Чем увереннее помнишь, тем реже встречаешь. «Легко» — кнопкой внизу, перескакивает через интервал.
+        <b>Как запоминать.</b> Свайп <b>влево</b> «Помню» — слово уходит на бóльший интервал и вернётся позже (1 → 2 → 4 → 8… дней). Свайп <b>вправо</b> «Не помню» — сбрасывается и повторится снова уже сегодня. Чем увереннее помнишь, тем реже встречаешь. «Легко» — кнопкой внизу, перескакивает через интервал.
         <button class="th-close" onclick="dismissHint()">Понятно</button>
       </div>
       <div class="stage" id="stage"></div>
@@ -549,7 +572,7 @@
 <script>
 const DAY = 86400000;
 const KEY = 'vocabswipe.v1';
-const INTERVALS = [0, 1, 3, 7, 16, 35, 75];
+const INTERVALS = [0, 1, 2, 4, 8, 16, 30];
 const DECKS = {
   en: { name:'Английский', level:'C1', code:'EN', voice:'en-GB', rtl:false, ph:'ubiquitous' },
   sr: { name:'Сербский',   level:'B2', code:'SR', voice:'sr-RS', rtl:false, ph:'razumeti' },
@@ -1794,7 +1817,7 @@ function renderStage(){
 function cbtn(cls,ic,title,fn){ const b=document.createElement('button'); b.className='cbtn '+cls; b.innerHTML=ic; b.title=title; b.onclick=fn; return b; }
 function makeCard(c, idx){
   const d=DECKS[c.deck];
-  const el=document.createElement('div'); el.className='swipe'; el.dataset.id=c.id; el._card=c;
+  const el=document.createElement('div'); el.className='swipe deck-'+c.deck; el.dataset.id=c.id; el._card=c;
   const front = dir==='recog'
     ? `<div class="word ${d.rtl?'rtl':''}">${esc(c.word)}</div>` + (c.example?`<div class="ex ${d.rtl?'rtl':''}">${highlight(c.example,c.word,d.rtl)}</div>`:'')
     : `<div class="word">${esc(c.translation)}</div>`;
@@ -1808,65 +1831,91 @@ function makeCard(c, idx){
   return el;
 }
 function flipTop(){
-  const el=document.querySelector('#stage .swipe:last-child'); if(!el) return;
-  const c=el._card, d=DECKS[c.deck]; flipped=!flipped;
+  const el=document.querySelector('#stage .swipe:last-child');
+  if(!el || el.classList.contains('flipping')) return;
+  const c=el._card, d=DECKS[c.deck];
   const body=el.querySelector('.body');
-  if(flipped){
-    body.classList.add('flipped');
-    el.classList.add('is-back');
-    const ans = dir==='recog'
-      ? `<div class="ans"><div class="tr">${esc(c.translation)}</div><div class="sub ${d.rtl?'rtl':''}">${esc(c.word)}</div></div>`
-      : `<div class="ans"><div class="tr ${d.rtl?'rtl':''}">${esc(c.word)}</div><div class="sub">${esc(c.translation)}</div></div>`;
-    const ex = c.example
-      ? `<div class="sect"><span class="lbl">Пример</span><div class="ex ${d.rtl?'rtl':''}">${highlight(c.example,c.word,d.rtl)}</div>${c.exampleTr?`<div class="extr">${esc(c.exampleTr)}</div>`:''}</div>`
-      : '';
-    const notes = c.notes
-      ? `<div class="sect"><span class="lbl">Заметка</span><div class="notesblk">${esc(c.notes)}</div></div>`
-      : '';
-    body.innerHTML = `<div class="face back">${ans}${ex}${notes}<button class="spk" onclick="event.stopPropagation();speak('${c.id}')">${IC.spk}</button></div>`;
-  } else {
-    body.classList.remove('flipped');
-    el.classList.remove('is-back');
-    const front = dir==='recog'
-      ? `<div class="word ${d.rtl?'rtl':''}">${esc(c.word)}</div>`+(c.example?`<div class="ex ${d.rtl?'rtl':''}">${highlight(c.example,c.word,d.rtl)}</div>`:'')
-      : `<div class="word">${esc(c.translation)}</div>`;
-    body.innerHTML = `<div class="face front">${front}<div class="reveal">нажми, чтобы проверить</div></div>`;
-  }
-  body.onclick=(e)=>{ e.stopPropagation(); flipTop(); };
+  const nextFlipped=!flipped;
+
+  el.classList.add('flipping');
+  setTimeout(()=>{
+    flipped=nextFlipped;
+    if(flipped){
+      body.classList.add('flipped');
+      el.classList.add('is-back');
+      const ans = dir==='recog'
+        ? `<div class="ans"><div class="tr">${esc(c.translation)}</div><div class="sub ${d.rtl?'rtl':''}">${esc(c.word)}</div></div>`
+        : `<div class="ans"><div class="tr ${d.rtl?'rtl':''}">${esc(c.word)}</div><div class="sub">${esc(c.translation)}</div></div>`;
+      const ex = c.example
+        ? `<div class="sect"><span class="lbl">Пример</span><div class="ex ${d.rtl?'rtl':''}">${highlight(c.example,c.word,d.rtl)}</div>${c.exampleTr?`<div class="extr">${esc(c.exampleTr)}</div>`:''}</div>`
+        : '';
+      const notes = c.notes
+        ? `<div class="sect"><span class="lbl">Заметка</span><div class="notesblk">${esc(c.notes)}</div></div>`
+        : '';
+      body.innerHTML = `<div class="face back">${ans}${ex}${notes}<button class="spk" onclick="event.stopPropagation();speak('${c.id}')">${IC.spk}</button></div>`;
+    } else {
+      body.classList.remove('flipped');
+      el.classList.remove('is-back');
+      const front = dir==='recog'
+        ? `<div class="word ${d.rtl?'rtl':''}">${esc(c.word)}</div>`+(c.example?`<div class="ex ${d.rtl?'rtl':''}">${highlight(c.example,c.word,d.rtl)}</div>`:'')
+        : `<div class="word">${esc(c.translation)}</div>`;
+      body.innerHTML = `<div class="face front">${front}<div class="reveal">нажми, чтобы проверить</div></div>`;
+    }
+    body.onclick=(e)=>{ e.stopPropagation(); flipTop(); };
+    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.remove('flipping')));
+  },140);
 }
 function bindSwipe(el){
   if(!el) return;
   let sx=0, sy=0, dx=0, dy=0, drag=false, moved=false, horiz=false;
+  let startedAt=0, lastX=0, lastAt=0, velocityX=0;
   const bKnow=el.querySelector('.badge.know'), bForgot=el.querySelector('.badge.forgot');
-  const down=e=>{ drag=true; moved=false; horiz=false; sx=e.clientX; sy=e.clientY; el.style.transition='none';
-    try{ el.setPointerCapture(e.pointerId); }catch(_){} };
+  const down=e=>{
+    if(e.pointerType==='mouse' && e.button!==0) return;
+    drag=true; moved=false; horiz=false; dx=dy=0;
+    sx=lastX=e.clientX; sy=e.clientY; startedAt=lastAt=performance.now(); velocityX=0;
+    el.style.transition='none'; el.classList.add('dragging');
+    try{ el.setPointerCapture(e.pointerId); }catch(_){}
+  };
   const move=e=>{
     if(!drag) return;
     dx=e.clientX-sx; dy=e.clientY-sy;
-    // определяем ось один раз: если палец повёл вверх/вниз — это прокрутка, карту не трогаем
-    if(!moved && (Math.abs(dx)>6 || Math.abs(dy)>6)){ moved=true; horiz=Math.abs(dx) > Math.abs(dy); }
-    if(!horiz) return;                 // вертикаль отдаём странице (скролл / переключение языка)
+    const ax=Math.abs(dx), ay=Math.abs(dy);
+    // Небольшой горизонтальный жест распознаём раньше вертикального — на телефоне карточка «цепляется» легче.
+    if(!moved && (ax>4 || ay>4)){
+      moved=true;
+      horiz = ax > ay*0.72;
+    }
+    if(!horiz) return;
     if(e.cancelable) e.preventDefault();
-    el.style.transform=`translate3d(${dx}px,0,0) rotate(${dx/30}deg)`;   // только X, на GPU
-    bKnow.style.opacity   = dx<0 ? Math.min(-dx/90,1):0;   // влево  → Помню
-    bForgot.style.opacity = dx>0 ? Math.min(dx/90,1):0;    // вправо → Не помню
+    const nowT=performance.now(), dt=Math.max(nowT-lastAt,1);
+    velocityX=(e.clientX-lastX)/dt; lastX=e.clientX; lastAt=nowT;
+    const resistance = 1 - Math.min(Math.abs(dx)/900,.18);
+    const x=dx*resistance;
+    el.style.transform=`translate3d(${x}px,${Math.min(Math.abs(x)*.025,8)}px,0) rotate(${x/38}deg)`;
+    const feedback=Math.min(Math.abs(x)/58,1);
+    bKnow.style.opacity   = x<0 ? feedback:0;
+    bForgot.style.opacity = x>0 ? feedback:0;
   };
   const up=e=>{
-    if(!drag) return; drag=false;
+    if(!drag) return; drag=false; el.classList.remove('dragging');
     try{ el.releasePointerCapture(e.pointerId); }catch(_){}
-    el.style.transition='transform .18s cubic-bezier(0,0,.2,1), opacity .18s cubic-bezier(0,0,.2,1)';
-    const TH=80;
-    if(horiz && dx > TH) finishSwipe(el,'right');
-    else if(horiz && dx < -TH) finishSwipe(el,'left');
+    el.style.transition='transform .2s cubic-bezier(.2,.8,.2,1), opacity .2s cubic-bezier(.2,.8,.2,1)';
+    const threshold=Math.min(56, el.clientWidth*.16);
+    const flick=Math.abs(velocityX)>.42 && Math.abs(dx)>24;
+    if(horiz && (dx>threshold || (flick && velocityX>0))) finishSwipe(el,'right');
+    else if(horiz && (dx<-threshold || (flick && velocityX<0))) finishSwipe(el,'left');
     else { el.style.transform=''; bKnow.style.opacity=bForgot.style.opacity=0; }
     dx=dy=0; horiz=false;
   };
-  el.addEventListener('pointerdown',down);
-  el.addEventListener('pointermove',move);
-  el.addEventListener('pointerup',up);
-  el.addEventListener('pointercancel',up);
-  // перетаскивание не считаем тапом (иначе карта переворачивается после свайпа)
-  el.addEventListener('click', e=>{ if(moved && horiz){ e.stopPropagation(); e.preventDefault(); moved=false; } }, true);
+  el.addEventListener('pointerdown',down,{passive:true});
+  el.addEventListener('pointermove',move,{passive:false});
+  el.addEventListener('pointerup',up,{passive:true});
+  el.addEventListener('pointercancel',up,{passive:true});
+  el.addEventListener('click', e=>{
+    if(moved && horiz){ e.stopPropagation(); e.preventDefault(); }
+    moved=false;
+  }, true);
 }
 function animateOut(dirn){
   const el=document.querySelector('#stage .swipe:last-child'); if(!el) return;
