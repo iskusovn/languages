@@ -2263,9 +2263,23 @@ function animateOut(dirn){
 function finishSwipe(el, dirn){
   const off = dirn==='right'?700 : dirn==='left'?-700 : 0;
   const offY = dirn==='up'? -800 : 60;
-  el.style.transform=`translate3d(${off}px,${offY}px,0) rotate(${off/24}deg)`; el.style.opacity=0;
+
+  // Пока текущая карточка уходит, следующая уже плавно поднимается на её место.
+  // Это убирает короткую пустую паузу и ощущение «лага» на телефоне.
+  const nextCard = el.previousElementSibling;
+  if(nextCard && nextCard.classList.contains('swipe')){
+    nextCard.style.transition='transform .30s cubic-bezier(.22,1,.36,1), opacity .24s ease, box-shadow .30s ease';
+    requestAnimationFrame(()=>{
+      nextCard.style.transform='translate3d(0,0,0) scale(1)';
+      nextCard.style.opacity='1';
+      nextCard.style.boxShadow='var(--glass-shadow-lg)';
+    });
+  }
+
+  el.style.transform=`translate3d(${off}px,${offY}px,0) rotate(${off/24}deg)`;
+  el.style.opacity=0;
   const grade = dirn==='left'?'know' : dirn==='right'?'forgot' : 'easy';
-  setTimeout(()=>applyGrade(el._card, grade), 170);
+  setTimeout(()=>applyGrade(el._card, grade), 285);
 }
 function fmtDue(days){ if(days<=0) return 'вернётся сегодня'; if(days===1) return 'снова завтра'; return 'через '+days+' '+plural(days,'день','дня','дней'); }
 function applyGrade(c, g){
