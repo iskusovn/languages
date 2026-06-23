@@ -316,10 +316,20 @@
 
   /* FRONT */
   .swipe .body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:12px 0;position:relative;z-index:1;overflow:hidden}
+  .face.front{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px}
+  .face.front .word{margin:0 auto}
+  .face.front{flex-direction:column;gap:14px}
+  .face.front .front-note{max-width:88%;font-size:12px;line-height:1.45;color:var(--ink3);font-weight:500;text-align:center;overflow-wrap:anywhere}
   .swipe .body.flipped{align-items:stretch;justify-content:flex-start;text-align:left;gap:0;padding:20px 4px 4px;overflow-y:auto}
   .swipe .word{
     font-family:var(--sans);font-size:clamp(20px,6.5vw,38px);font-weight:800;line-height:1.1;letter-spacing:-.03em;color:var(--ink);
     max-width:100%;overflow-wrap:anywhere;word-break:break-word;hyphens:auto;
+  }
+  .swipe.deck-ar .face.front .word{
+    font-size:clamp(34px,11vw,52px);
+    line-height:1.28;
+    letter-spacing:0;
+    font-weight:700;
   }
   .swipe .ex{font-family:var(--sans);font-size:14.5px;color:var(--ink2);line-height:1.55;max-width:94%;font-weight:400}
   .swipe .ex .hl{font-weight:700;color:var(--ink2);border-bottom:0}
@@ -349,8 +359,9 @@
   .face.back .details{
     flex:none;border-top:1px solid rgba(var(--deck-rgb),.18);padding:14px 2px 0;
     max-height:42%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
-    scrollbar-width:none;
+    scrollbar-width:none;margin-top:auto;
   }
+  .face.back .details:empty{display:none}
   .face.back .details::-webkit-scrollbar{display:none}
   .face.back .sect{padding:0 0 12px;margin:0}
   .face.back .sect + .sect{border-top:1px solid rgba(var(--deck-rgb),.12);padding-top:12px}
@@ -360,6 +371,8 @@
   .face.back .extr{font-size:11.5px;color:var(--ink3);line-height:1.45;margin-top:5px}
   .face.back .notesblk{font-size:12px;color:var(--ink2);line-height:1.45}
   .face.back .spk{position:absolute;right:0;bottom:0;margin:0}
+  .face.back .edit-card{position:absolute;left:0;bottom:0;border:1px solid rgba(var(--deck-rgb),.18);background:rgba(255,255,255,.72);color:var(--ink2);height:38px;padding:0 14px;border-radius:999px;font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  .face.back .edit-card:active{transform:scale(.96);background:rgba(255,255,255,.92)}
 
   .badge{position:absolute;top:24px;padding:8px 14px;border:0;border-radius:var(--radius-sm);z-index:2;
          font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;opacity:0;color:#fff;
@@ -395,6 +408,8 @@
   .cbtn.flip,.cbtn.easy{width:46px;height:46px}
   .cbtn.flip{color:var(--ink3)}
   .cbtn.easy{color:var(--ink2)}
+  .cbtn.easy.is-favorite{color:#F3A712;background:rgba(243,167,18,.10);border-color:rgba(243,167,18,.28)}
+  .cbtn.easy.is-favorite svg{fill:currentColor}
 
   .empty{text-align:center;padding:48px 20px;color:var(--muted);display:flex;flex-direction:column;align-items:center}
   .empty .mk{
@@ -577,6 +592,9 @@
     body.train-mode .controls{margin-top:12px}
   }
 
+
+  .swipe.deck-ar .face.front{width:100%;display:flex;align-items:center;justify-content:center;flex:1}
+  .swipe.deck-ar .face.front .word{font-size:clamp(42px,12vw,64px);line-height:1.45;text-align:center;width:100%;padding:0 8px}
 </style>
 </head>
 <body>
@@ -606,6 +624,7 @@
         <button class="linkbtn" onclick="document.getElementById('imp').click()">Импорт JSON</button>
       </div>
       <input type="file" id="imp" accept="application/json" style="display:none" onchange="importData(event)">
+      <button class="btn ghost sm" style="margin-top:18px" onclick="updateApp()">Обновить приложение</button>
       <p class="hint-note">Данные хранятся только на этом устройстве. Делай экспорт время от времени, чтобы не потерять прогресс.</p>
     </section>
 
@@ -617,10 +636,6 @@
         <button id="dir-prod" onclick="setDir('prod')">Воспроизведение</button>
       </div>
       <div class="ctx" id="trainCtx"></div>
-      <div class="train-hint" id="trainHint" style="display:none">
-        <b>Как запоминать.</b> Свайп <b>влево</b> «Помню» — слово уходит на бóльший интервал и вернётся позже (1 → 2 → 4 → 8… дней). Свайп <b>вправо</b> «Не помню» — сбрасывается и повторится снова уже сегодня. Чем увереннее помнишь, тем реже встречаешь. «Легко» — кнопкой внизу, перескакивает через интервал.
-        <button class="th-close" onclick="dismissHint()">Понятно</button>
-      </div>
       <div class="stage" id="stage"></div>
       <div class="controls" id="controls"></div>
     </section>
@@ -1647,49 +1662,187 @@ const SEED_SR = [
 ];
 
 
-const SEED_AR = [
-  {w:"يَقْرَأُ",t:"читать",ex:"هُوَ يَقْرَأُ كِتَابًا.",exTr:"Он читает книгу.",n:"yaqra'u"},
-  {w:"يُحِبُّ",t:"любить",ex:"أَنَا أُحِبُّ القَهْوَةَ.",exTr:"Я люблю кофе.",n:"yuhibbu"},
-  {w:"يَذْهَبُ",t:"идти, ехать",ex:"أَنَا أَذْهَبُ إِلَى العَمَلِ.",exTr:"Я иду на работу.",n:"yadhhabu"},
-  {w:"يَعْمَلُ",t:"работать",ex:"هُوَ يَعْمَلُ اليَوْمَ.",exTr:"Он работает сегодня.",n:"ya'malu"},
-  {w:"يَأْكُلُ",t:"есть",ex:"أَنَا آكُلُ خُبْزًا.",exTr:"Я ем хлеб.",n:"ya'kulu"},
-  {w:"يَكْتُبُ",t:"писать",ex:"هِيَ تَكْتُبُ رِسَالَةً.",exTr:"Она пишет письмо.",n:"yaktubu"},
-  {w:"يَدْرُسُ",t:"учить, изучать",ex:"أَنَا أَدْرُسُ العَرَبِيَّةَ.",exTr:"Я изучаю арабский.",n:"yadrusu"},
-  {w:"يَنَامُ",t:"спать",ex:"الطِّفْلُ يَنَامُ.",exTr:"Ребёнок спит.",n:"yanāmu"},
-  {w:"يَبْدَأُ",t:"начинать",ex:"الدَّرْسُ يَبْدَأُ الآنَ.",exTr:"Урок начинается сейчас.",n:"yabda'u"},
-  {w:"يَنْتَهِي",t:"заканчивать, заканчиваться",ex:"العَمَلُ يَنْتَهِي السَّاعَةَ خَمْسَةً.",exTr:"Работа заканчивается в пять часов.",n:"yantahī"},
-  {w:"أُرِيدُ",t:"я хочу",ex:"أُرِيدُ قَهْوَةً.",exTr:"Я хочу кофе.",n:"urīdu"},
-  {w:"أَنْوِي",t:"я собираюсь, намереваюсь",ex:"أَنْوِي أَنْ أَدْرُسَ اليَوْمَ.",exTr:"Я собираюсь учиться сегодня.",n:"anwī"},
-  {w:"عِنْدِي",t:"у меня есть",ex:"عِنْدِي كِتَابٌ.",exTr:"У меня есть книга.",n:"'indī"},
-  {w:"لَيْسَ عِنْدِي",t:"у меня нет",ex:"لَيْسَ عِنْدِي وَقْتٌ.",exTr:"У меня нет времени.",n:"laysa 'indī"},
-  {w:"كَانَ",t:"было; был",ex:"كَانَ اليَوْمُ جَمِيلًا.",exTr:"День был хорошим.",n:"kāna"},
-  {w:"كَثِيرًا",t:"много; очень",ex:"أَدْرُسُ كَثِيرًا.",exTr:"Я много учусь.",n:"kathīran"},
-  {w:"كَمْ",t:"сколько",ex:"كَمْ كِتَابًا عِنْدَكَ؟",exTr:"Сколько у тебя книг?",n:"kam"},
-  {w:"يَجِبُ",t:"надо, необходимо",ex:"يَجِبُ أَنْ أَعْمَلَ.",exTr:"Мне надо работать.",n:"yajibu"},
-  {w:"التَّالِي",t:"следующий",ex:"الأُسْبُوعُ التَّالِي.",exTr:"Следующая неделя.",n:"at-tālī"},
-  {w:"السَّابِق",t:"предыдущий",ex:"الشَّهْرُ السَّابِقُ.",exTr:"Предыдущий месяц.",n:"as-sābiq"},
-  {w:"سَنَة",t:"год",ex:"هٰذِهِ سَنَةٌ جَدِيدَةٌ.",exTr:"Это новый год.",n:"sana"},
-  {w:"يَوْم",t:"день",ex:"هٰذَا يَوْمٌ جَمِيلٌ.",exTr:"Это хороший день.",n:"yawm"},
-  {w:"أُسْبُوع",t:"неделя",ex:"أَعْمَلُ أُسْبُوعًا وَاحِدًا.",exTr:"Я работаю одну неделю.",n:"usbū'"},
-  {w:"شَهْر",t:"месяц",ex:"هٰذَا الشَّهْرُ طَوِيلٌ.",exTr:"Этот месяц длинный.",n:"shahr"},
-  {w:"أُخَطِّطُ",t:"я планирую",ex:"أُخَطِّطُ لِلسَّفَرِ.",exTr:"Я планирую путешествие.",n:"ukhattitu"},
-  {w:"عَادَةً",t:"обычно",ex:"عَادَةً أَنَامُ مُبَكِّرًا.",exTr:"Обычно я сплю рано.",n:"'ādatan"},
-  {w:"مَتَى",t:"когда",ex:"مَتَى يَبْدَأُ الدَّرْسُ؟",exTr:"Когда начинается урок?",n:"matā"}
+const SEED_EN = [
+  {w:"enabler",t:"сторонник; тот, кто делает что-то возможным",ex:"His financial support made him an enabler of the project.",exTr:"Его финансовая поддержка сделала проект возможным."},
+  {w:"at first glance",t:"на первый взгляд",ex:"At first glance, the plan looks simple.",exTr:"На первый взгляд план кажется простым."},
+  {w:"fossil",t:"ископаемое; окаменелость",ex:"Fossils are formed over millions of years.",exTr:"Окаменелости формируются миллионы лет."},
+  {w:"surge",t:"резкий рост; всплеск",ex:"There was a surge in popularity.",exTr:"Произошёл резкий рост популярности."},
+  {w:"malaise",t:"упадок; общее недомогание",ex:"The country went through a period of malaise.",exTr:"Страна пережила период упадка."},
+  {w:"divisive",t:"вызывающий раскол; спорный",ex:"It was a deeply divisive decision.",exTr:"Это было решение, вызвавшее глубокий раскол."},
+  {w:"not assured",t:"не гарантирован",ex:"Victory is not assured.",exTr:"Победа не гарантирована."},
+  {w:"perception",t:"восприятие; представление",ex:"Public perception can change quickly.",exTr:"Общественное восприятие может быстро измениться."},
+  {w:"condensed",t:"сокращённый; сжатый",ex:"This interview has been condensed.",exTr:"Это интервью было сокращено."},
+  {w:"passing",t:"кончина; уход из жизни",ex:"The passing of the Queen was widely mourned.",exTr:"Кончину королевы широко оплакивали."},
+  {w:"evidence",t:"доказательство; свидетельство",ex:"There is no clear evidence yet.",exTr:"Пока нет ясных доказательств."},
+  {w:"passion",t:"страсть; увлечённость",ex:"Passion can manifest in different ways.",exTr:"Страсть может проявляться по-разному."},
+  {w:"obligation",t:"обязанность",ex:"Climate action is not just an obligation.",exTr:"Борьба с изменением климата — не только обязанность."},
+  {w:"resignation",t:"увольнение; заявление об уходе",ex:"I submitted my resignation yesterday.",exTr:"Вчера я подал заявление об уходе."},
+  {w:"failing",t:"недостаток; неудача",ex:"People are often blamed for their personal failings.",exTr:"Людей часто винят в их личных недостатках."},
+  {w:"scrutinize",t:"тщательно изучать; проверять",ex:"Her skills were closely scrutinized.",exTr:"Её навыки тщательно проверили."},
+  {w:"endorsement",t:"поддержка; одобрение",ex:"The candidate received a major endorsement.",exTr:"Кандидат получил важную поддержку."},
+  {w:"seal the deal",t:"окончательно договориться; закрыть сделку",ex:"A final meeting helped us seal the deal.",exTr:"Финальная встреча помогла нам закрыть сделку."},
+  {w:"senility",t:"старческая немощь; слабоумие",ex:"The article discussed concerns about senility.",exTr:"В статье обсуждались опасения по поводу старческой немощи."},
+  {w:"imminent",t:"неизбежный; неминуемый; близкий",ex:"A decision is imminent.",exTr:"Решение будет принято совсем скоро."},
+  {w:"give or take",t:"плюс-минус; приблизительно",ex:"It takes an hour, give or take ten minutes.",exTr:"Это занимает около часа, плюс-минус десять минут."},
+  {w:"consistency",t:"последовательность; постоянство",ex:"Consistency is more important than intensity.",exTr:"Постоянство важнее интенсивности."},
+  {w:"durational",t:"продолжительный; основанный на длительности",ex:"They created a durational performance for the gallery.",exTr:"Они создали продолжительный перформанс для галереи."},
+  {w:"robust",t:"надёжный; сильный; устойчивый",ex:"We need a robust negotiating position.",exTr:"Нам нужна сильная переговорная позиция."},
+  {w:"deter",t:"сдерживать; отпугивать",ex:"The policy is designed to deter aggression.",exTr:"Эта политика призвана сдерживать агрессию."},
+  {w:"deterrent",t:"сдерживающий фактор",ex:"A strong defence can act as a deterrent.",exTr:"Сильная оборона может служить сдерживающим фактором."},
+  {w:"figure out",t:"понять; разобраться",ex:"Did you just figure that out?",exTr:"Ты только сейчас это понял?"},
+  {w:"mock",t:"высмеивать; передразнивать",ex:"Are you mocking me?",exTr:"Ты меня передразниваешь?"},
+  {w:"out of sight, out of mind",t:"с глаз долой — из сердца вон",ex:"Keep snacks out of sight, out of mind.",exTr:"Убери снеки с глаз — и меньше будешь о них думать."},
+  {w:"on the verge of",t:"на грани; в шаге от",ex:"The team is on the verge of victory.",exTr:"Команда в шаге от победы."},
+  {w:"decisive",t:"решительный; определяющий",ex:"She was more decisive than her colleagues.",exTr:"Она была решительнее своих коллег."},
+  {w:"hot take",t:"провокационное мнение; резкое суждение",ex:"Here is my hot take on the new policy.",exTr:"Вот моё провокационное мнение о новой политике."},
+  {w:"boredom",t:"скука",ex:"Boredom can make it hard to focus.",exTr:"Скука может мешать сосредоточиться."},
+  {w:"faint",t:"слабый; едва заметный",ex:"I heard a faint sound outside.",exTr:"Я услышал снаружи слабый звук."},
+  {w:"left-behind",t:"оставленный позади; забытый",ex:"The term left-behind is often used in political debates.",exTr:"Термин «оставленный позади» часто используется в политических дебатах."},
+  {w:"urban densification",t:"городское уплотнение",ex:"Urban densification can help address the housing crisis.",exTr:"Городское уплотнение может помочь решить жилищный кризис."},
+  {w:"festoon",t:"украшать гирляндами",ex:"The hall was festooned with lights.",exTr:"Зал был украшен гирляндами."},
+  {w:"abashed",t:"смущённый",ex:"He said nothing but looked abashed.",exTr:"Он ничего не сказал, но выглядел смущённым."},
+  {w:"stand-by duty",t:"дежурство; режим ожидания",ex:"I am on stand-by duty tonight.",exTr:"Сегодня вечером я дежурю."},
+  {w:"abstruse",t:"трудный для понимания; заумный",ex:"It was an abstruse philosophical essay.",exTr:"Это было трудное для понимания философское эссе."},
+  {w:"rapport",t:"взаимопонимание; хороший контакт",ex:"She has an excellent rapport with her staff.",exTr:"У неё отличное взаимопонимание с сотрудниками."},
+  {w:"assignment",t:"задание; служебная командировка",ex:"I have a reading assignment to finish.",exTr:"Мне нужно закончить задание по чтению."},
+  {w:"on assignment",t:"на задании; в командировке",ex:"The journalist was abroad on assignment.",exTr:"Журналист был за границей по заданию."},
+  {w:"hoard",t:"запас; накапливать и прятать",ex:"Some people began to hoard food.",exTr:"Некоторые люди начали запасать еду."},
+  {w:"vagabond",t:"бродяга; странник",ex:"He lived a vagabond life.",exTr:"Он вёл жизнь странника."},
+  {w:"vagrant",t:"бездомный; бродяга",ex:"The town opened a shelter for vagrants.",exTr:"Город открыл приют для бездомных."},
+  {w:"insist",t:"настаивать",ex:"If you insist, I will stay.",exTr:"Если вы настаиваете, я останусь."},
+  {w:"beam at someone",t:"сияюще улыбаться кому-то",ex:"She was beaming at me.",exTr:"Она широко мне улыбалась."},
+  {w:"grim",t:"мрачный; ужасный",ex:"The situation looked grim.",exTr:"Ситуация выглядела мрачно."},
+  {w:"endurance",t:"выносливость; стойкость",ex:"Running a marathon is a test of endurance.",exTr:"Марафон — это испытание на выносливость."},
+  {w:"prosperous",t:"процветающий; обеспеченный",ex:"It is a prosperous country.",exTr:"Это процветающая страна."},
+  {w:"obtain",t:"получать; приобретать",ex:"He obtained a new passport.",exTr:"Он получил новый паспорт."},
+  {w:"fussy",t:"привередливый; придирчивый",ex:"He is very fussy about food.",exTr:"Он очень привередлив в еде."},
+  {w:"deserve",t:"заслуживать",ex:"You deserve a break.",exTr:"Ты заслуживаешь отдыха."},
+  {w:"miserable",t:"несчастный; жалкий",ex:"He felt miserable in his marriage.",exTr:"Он чувствовал себя несчастным в браке."},
+  {w:"inoculate",t:"прививать; делать устойчивым",ex:"Education can inoculate people against misinformation.",exTr:"Образование может сделать людей устойчивее к дезинформации."},
+  {w:"vanity",t:"тщеславие",ex:"Vanity can affect our decisions.",exTr:"Тщеславие может влиять на наши решения."},
+  {w:"self-affordance",t:"самообеспечение; возможность действовать самостоятельно",ex:"The project aims to improve self-affordance.",exTr:"Проект направлен на развитие самостоятельности."},
+  {w:"torture",t:"пытать; мучить",ex:"The noise was starting to torture him.",exTr:"Шум начинал его мучить."},
+  {w:"chase",t:"преследовать; добиваться",ex:"No chasing, no begging.",exTr:"Не преследовать и не умолять."},
+  {w:"beg",t:"умолять; просить",ex:"I will not beg for attention.",exTr:"Я не буду умолять о внимании."},
+  {w:"overwhelm",t:"перегружать; ошеломлять",ex:"Too many tasks can overwhelm you.",exTr:"Слишком много задач могут тебя перегрузить."},
+  {w:"revenge",t:"месть",ex:"She wanted revenge for what happened.",exTr:"Она хотела отомстить за случившееся."},
+  {w:"abomination",t:"мерзость; нечто отвратительное",ex:"He called the building an abomination.",exTr:"Он назвал это здание мерзостью."},
+  {w:"buzzword",t:"модное слово; громкий термин",ex:"Sustainability should not be just a buzzword.",exTr:"Устойчивость не должна быть просто модным словом."},
+  {w:"hostile",t:"враждебный",ex:"The audience became hostile.",exTr:"Аудитория стала враждебной."},
+  {w:"hereby",t:"настоящим; тем самым",ex:"We hereby inform you of the decision.",exTr:"Настоящим сообщаем вам о решении."},
+  {w:"prebunking",t:"предварительное опровержение дезинформации",ex:"Prebunking teaches people to recognise manipulation early.",exTr:"Пребанкинг учит заранее распознавать манипуляции."},
+  {w:"debunking",t:"разоблачение; опровержение",ex:"Debunking corrects false claims after they spread.",exTr:"Дебанкинг исправляет ложные утверждения после их распространения."},
+  {w:"postpone",t:"переносить; откладывать",ex:"I have to postpone our meeting.",exTr:"Мне нужно перенести нашу встречу."},
+  {w:"deranged",t:"безумный; неадекватный",ex:"This is a deranged strategy.",exTr:"Это безумная стратегия."},
+  {w:"fairly",t:"довольно; вполне; справедливо",ex:"The task was fairly easy.",exTr:"Задача была довольно простой."},
+  {w:"halcyon",t:"безмятежный; спокойный",ex:"She remembered the halcyon days of summer.",exTr:"Она вспоминала безмятежные летние дни."},
+  {w:"iridescent",t:"переливающийся; радужный",ex:"The shell had an iridescent surface.",exTr:"У раковины была переливающаяся поверхность."},
+  {w:"ephemeral",t:"скоротечный; недолговечный",ex:"Fame can be ephemeral.",exTr:"Слава может быть недолговечной."},
+  {w:"recondite",t:"сложный и малоизвестный; загадочный",ex:"The book explores a recondite subject.",exTr:"Книга исследует сложную и малоизвестную тему."},
+  {w:"aureate",t:"золотистый; вычурный",ex:"The room was filled with aureate light.",exTr:"Комната была наполнена золотистым светом."},
+  {w:"quixotic",t:"донкихотский; наивно-идеалистичный",ex:"It was a quixotic attempt to change the system overnight.",exTr:"Это была наивно-идеалистичная попытка изменить систему за одну ночь."},
+  {w:"susurrus",t:"тихий шелест; шёпот",ex:"We heard the susurrus of leaves.",exTr:"Мы слышали тихий шелест листьев."},
+  {w:"perish",t:"погибать; исчезать",ex:"Many plants perish in extreme heat.",exTr:"Многие растения погибают в сильную жару."},
+  {w:"trace",t:"отслеживать; прослеживать",ex:"We can trace the idea back to the 1990s.",exTr:"Мы можем проследить эту идею до 1990-х."},
+  {w:"engrave",t:"гравировать; запечатлевать",ex:"Her name was engraved on the ring.",exTr:"Её имя было выгравировано на кольце."},
+  {w:"withstand",t:"выдерживать; противостоять",ex:"The building can withstand strong winds.",exTr:"Здание может выдерживать сильный ветер."},
+  {w:"disrupt",t:"нарушать; срывать",ex:"The strike disrupted public transport.",exTr:"Забастовка нарушила работу общественного транспорта."},
+  {w:"condemn",t:"осуждать; порицать",ex:"Leaders condemned the attack.",exTr:"Лидеры осудили нападение."},
+  {w:"forge",t:"ковать; подделывать; создавать",ex:"They forged a strong partnership.",exTr:"Они создали прочное партнёрство."},
+  {w:"prevail",t:"возобладать; преобладать",ex:"Common sense eventually prevailed.",exTr:"В конце концов здравый смысл возобладал."},
+  {w:"restrain",t:"сдерживать; ограничивать",ex:"He tried to restrain his anger.",exTr:"Он попытался сдержать гнев."},
+  {w:"dwell",t:"обитать; подробно останавливаться на",ex:"Do not dwell on past mistakes.",exTr:"Не зацикливайся на прошлых ошибках."},
+  {w:"bestow",t:"даровать; награждать",ex:"The university bestowed an award on her.",exTr:"Университет наградил её премией."},
+  {w:"assess",t:"оценивать",ex:"We need to assess the risks.",exTr:"Нам нужно оценить риски."},
+  {w:"evaluate",t:"оценивать; анализировать",ex:"The team evaluated three options.",exTr:"Команда оценила три варианта."},
+  {w:"assume",t:"предполагать",ex:"Do not assume that everyone agrees.",exTr:"Не предполагай, что все согласны."},
+  {w:"presume",t:"предполагать; считать вероятным",ex:"I presume the meeting is still on.",exTr:"Полагаю, встреча всё ещё состоится."},
+  {w:"acquire",t:"приобретать; получать",ex:"She acquired new skills quickly.",exTr:"Она быстро приобрела новые навыки."},
+  {w:"attain",t:"достигать",ex:"He attained a high level of proficiency.",exTr:"Он достиг высокого уровня владения."},
+  {w:"collaborate",t:"сотрудничать",ex:"The two teams collaborated on the project.",exTr:"Две команды сотрудничали над проектом."},
+  {w:"cooperate",t:"взаимодействовать; сотрудничать",ex:"Both sides agreed to cooperate.",exTr:"Обе стороны согласились сотрудничать."},
+  {w:"clarify",t:"прояснять",ex:"Could you clarify this point?",exTr:"Не могли бы вы прояснить этот момент?"},
+  {w:"elucidate",t:"разъяснять; подробно объяснять",ex:"The report elucidates the main causes.",exTr:"Отчёт подробно объясняет основные причины."},
+  {w:"facilitate",t:"облегчать; содействовать",ex:"The workshop will facilitate discussion.",exTr:"Воркшоп поможет обсуждению."},
+  {w:"simplify",t:"упрощать",ex:"We should simplify the process.",exTr:"Нам следует упростить процесс."},
+  {w:"generate",t:"создавать; производить",ex:"The project will generate new jobs.",exTr:"Проект создаст новые рабочие места."},
+  {w:"produce",t:"производить; создавать",ex:"The factory produces electric cars.",exTr:"Завод производит электромобили."},
+  {w:"indicate",t:"указывать; свидетельствовать",ex:"The data indicate a clear trend.",exTr:"Данные указывают на явную тенденцию."},
+  {w:"influence",t:"влиять",ex:"Context can influence behaviour.",exTr:"Контекст может влиять на поведение."},
+  {w:"affect",t:"воздействовать; влиять",ex:"The change will affect everyone.",exTr:"Изменение затронет всех."},
+  {w:"before we wrap up",t:"прежде чем мы закончим",ex:"Before we wrap up, let us review the next steps.",exTr:"Прежде чем закончить, давайте обсудим следующие шаги."},
+  {w:"grief",t:"горе; скорбь",ex:"Grief is painful, but it changes over time.",exTr:"Горе болезненно, но со временем меняется."},
+  {w:"temporary",t:"временный",ex:"This problem is only temporary.",exTr:"Эта проблема лишь временная."},
+  {w:"flag desecration",t:"осквернение флага",ex:"The law addresses flag desecration.",exTr:"Закон касается осквернения флага."},
+  {w:"precipitation",t:"осадки",ex:"Heavy precipitation is expected tonight.",exTr:"Сегодня ночью ожидаются сильные осадки."},
+  {w:"scrumptious",t:"очень вкусный; привлекательный (разг.)",ex:"The cake looks absolutely scrumptious.",exTr:"Торт выглядит невероятно аппетитно."},
 ];
 
-function seedArabicDeck(){
-  if(state.seededAR_v1) return;
-  const have = new Set(state.cards.filter(c=>c.deck==='ar').map(c=>c.word));
-  SEED_AR.forEach((v,i)=>{
-    if(have.has(v.w)) return;
+function seedEnglishDeck(){
+  if(state.seededEN_tg_v1) return;
+  const have = new Set(state.cards.filter(c=>c.deck==='en').map(c=>(c.word||'').toLowerCase().trim()));
+  SEED_EN.forEach((v,i)=>{
+    if(have.has(v.w.toLowerCase().trim())) return;
     state.cards.push({
-      id:'ar'+i+'_'+uid(), deck:'ar', word:v.w, translation:v.t,
-      example:v.ex, exampleTr:v.exTr, notes:v.n,
+      id:'en_tg_'+i+'_'+uid(), deck:'en', word:v.w, translation:v.t,
+      example:v.ex, exampleTr:v.exTr, notes:'Из Telegram: English every day',
       box:0, due:now(), created:now(), reps:0, lapses:0, lastReview:null
     });
   });
-  state.seededAR_v1 = true;
+  state.seededEN_tg_v1 = true;
   save();
+}
+
+const SEED_AR = [
+  // Дни недели
+  {w:"الاِثْنَيْن",t:"понедельник",n:"al-ithnayn"},
+  {w:"الثُّلَاثَاء",t:"вторник",n:"ath-thulāthā’"},
+  {w:"الأَرْبِعَاء",t:"среда",n:"al-arbi‘ā’"},
+  {w:"الخَمِيس",t:"четверг",n:"al-khamīs"},
+  {w:"الجُمُعَة",t:"пятница",n:"al-jumu‘a"},
+  {w:"السَّبْت",t:"суббота",n:"as-sabt"},
+  {w:"الأَحَد",t:"воскресенье",n:"al-aḥad"},
+
+  // Вопросительные слова
+  {w:"كَيْفَ",t:"как",n:"kayfa"},
+  {w:"مَتَى",t:"когда",n:"matā"},
+  {w:"أَيّ",t:"какой; который",n:"ayy"},
+  {w:"أَيْنَ",t:"где",n:"ayna"},
+  {w:"مَاذَا",t:"что — с глаголом",n:"mādhā"},
+  {w:"مَا",t:"что — без глагола",n:"mā"},
+  {w:"مَنْ",t:"кто",n:"man"},
+  {w:"لِمَاذَا",t:"почему — литературный арабский",n:"limādhā"},
+  {w:"لَيْش",t:"почему — разговорный вариант",n:"lēsh"},
+  {w:"كَمْ",t:"сколько",n:"kam"}
+];
+
+function seedArabicDeck(){
+  // Одноразовая миграция: полностью заменяем прежний арабский набор новым.
+  if(!state.arabicQuestionSet_v2){
+    state.cards = state.cards.filter(c=>c.deck!=='ar');
+    SEED_AR.forEach((v,i)=>{
+      state.cards.push({
+        id:'ar_q_'+i+'_'+uid(), deck:'ar', word:v.w, translation:v.t,
+        example:'', exampleTr:'', notes:v.n,
+        box:0, due:now(), created:now(), reps:0, lapses:0, lastReview:null
+      });
+    });
+    state.arabicQuestionSet_v2 = true;
+    state.seededAR_v1 = true;
+    save();
+    return;
+  }
+
+  if(!state.arabicMaMaza_v3){
+    const ma = state.cards.find(c=>c.deck==='ar' && c.word==='مَا');
+    const madha = state.cards.find(c=>c.deck==='ar' && c.word==='مَاذَا');
+    if(ma) ma.translation='что — без глагола';
+    if(madha) madha.translation='что — с глаголом';
+    state.arabicMaMaza_v3=true;
+    save();
+  }
+
+  // Если пользователь удалил отдельное слово, не восстанавливаем его автоматически.
 }
 
 function seedDeck(){
@@ -1722,6 +1875,7 @@ const IC = {
 let state = load();
 seedDeck();
 seedArabicDeck();
+seedEnglishDeck();
 migrateInfinitive();
 let editingId = null;
 
@@ -1859,6 +2013,7 @@ function initList(){
   const f = document.getElementById('listFilter');
   if(!f.children.length){
     f.appendChild(tabBtn('all','Все', ()=>{listDeck='all';markFilter();renderList();}));
+    f.appendChild(tabBtn('fav','★', ()=>{listDeck='fav';markFilter();renderList();}));
     DECK_ORDER.forEach(id=>f.appendChild(tabBtn(id, DECKS[id].code, ()=>{listDeck=id;markFilter();renderList();})));
   }
   markFilter(); renderList();
@@ -1868,7 +2023,8 @@ function markFilter(){ document.querySelectorAll('#listFilter button').forEach(b
 function renderList(){
   const q = document.getElementById('search').value.trim().toLowerCase();
   let list = state.cards.slice().reverse();
-  if(listDeck!=='all') list = list.filter(c=>c.deck===listDeck);
+  if(listDeck==='fav') list = list.filter(c=>c.favorite);
+  else if(listDeck!=='all') list = list.filter(c=>c.deck===listDeck);
   if(q) list = list.filter(c=>(c.word+c.translation+(c.example||'')).toLowerCase().includes(q));
   const el = document.getElementById('words'); el.innerHTML='';
   const total = list.length;
@@ -1884,7 +2040,7 @@ function renderList(){
         <div class="w ${d.rtl?'rtl':''}">${esc(c.word)}</div>
         <div class="t">${esc(c.translation)}</div>
       </div>
-      <div class="stg">${due?'к повтору':'этап '+(c.box||0)}</div>
+      <div class="stg">${c.favorite?'★ избранное':(due?'к повтору':'этап '+(c.box||0))}</div>
       <button class="ib edit" title="Изменить">${IC.edit}</button>
       <button class="ib del" title="Удалить">${IC.del}</button>`;
     div.querySelector('.edit').onclick=()=>startEdit(c.id);
@@ -1967,23 +2123,36 @@ function renderStage(){
   }
   ctrls.appendChild(cbtn('know',IC.know,'Помню',()=>animateOut('left')));
   ctrls.appendChild(cbtn('flip',IC.flip,'Перевернуть',flipTop));
-  ctrls.appendChild(cbtn('easy',IC.easy,'Легко',()=>animateOut('up')));
+  const favBtn=cbtn('easy',IC.easy,'Избранное',toggleFavorite);
+  favBtn.classList.toggle('is-favorite', !!queue[0].favorite);
+  favBtn.setAttribute('aria-pressed', queue[0].favorite ? 'true' : 'false');
+  ctrls.appendChild(favBtn);
   ctrls.appendChild(cbtn('forgot',IC.forgot,'Не помню',()=>animateOut('right')));
   bindSwipe(stage.lastChild);
+}
+function toggleFavorite(){
+  const c=queue[0]; if(!c) return;
+  c.favorite=!c.favorite; save();
+  const b=document.querySelector('#controls .cbtn.easy');
+  if(b){ b.classList.toggle('is-favorite', !!c.favorite); b.setAttribute('aria-pressed', c.favorite?'true':'false'); }
+  toast(c.favorite?'Добавлено в избранное':'Удалено из избранного');
 }
 function cbtn(cls,ic,title,fn){ const b=document.createElement('button'); b.className='cbtn '+cls; b.innerHTML=ic; b.title=title; b.onclick=fn; return b; }
 function makeCard(c, idx){
   const d=DECKS[c.deck];
   const el=document.createElement('div'); el.className='swipe deck-'+c.deck; el.dataset.id=c.id; el._card=c;
-  const front = dir==='recog'
-    ? `<div class="word ${d.rtl?'rtl':''}">${esc(c.word)}</div>` + (c.example?`<div class="ex ${d.rtl?'rtl':''}">${highlight(c.example,c.word,d.rtl)}</div>`:'')
+  // На лицевой стороне во всех языках показываем только основной термин.
+  // Примеры и заметки всегда остаются на оборотной стороне в нижнем блоке.
+  const frontMain = dir==='recog'
+    ? `<div class="word ${d.rtl?'rtl':''}">${esc(c.word)}</div>`
     : `<div class="word">${esc(c.translation)}</div>`;
+  const frontNote = c.notes ? `<div class="front-note">${esc(c.notes)}</div>` : '';
+  const front = frontMain + frontNote;
   el.innerHTML = `
     <div class="badge forgot">Не помню</div>
     <div class="badge know">Помню</div>
-    <div class="badge easy">Легко</div>
     <div class="top"><span>${d.code} · ${d.name}</span><span>Этап ${c.box||0}/6</span></div>
-    <div class="body"><div class="face front">${front}<div class="reveal">нажми, чтобы проверить</div></div></div>`;
+    <div class="body"><div class="face front">${front}</div></div>`;
   el.querySelector('.body').onclick = (e)=>{ if(idx===0){ e.stopPropagation(); flipTop(); } };
   return el;
 }
@@ -2006,17 +2175,15 @@ function flipTop(){
       const ex = c.example
         ? `<div class="sect"><span class="lbl">Пример</span><div class="ex ${d.rtl?'rtl':''}">${highlight(c.example,c.word,d.rtl)}</div>${c.exampleTr?`<div class="extr">${esc(c.exampleTr)}</div>`:''}</div>`
         : '';
-      const notes = c.notes
-        ? `<div class="sect"><span class="lbl">Заметка</span><div class="notesblk">${esc(c.notes)}</div></div>`
-        : '';
-      body.innerHTML = `<div class="face back">${ans}<div class="details">${ex}${notes}</div><button class="spk" onclick="event.stopPropagation();speak('${c.id}')">${IC.spk}</button></div>`;
+      body.innerHTML = `<div class="face back">${ans}<div class="details">${ex}</div><button class="edit-card" onclick="event.stopPropagation();startEdit('${c.id}')">Редактировать</button><button class="spk" onclick="event.stopPropagation();speak('${c.id}')">${IC.spk}</button></div>`;
     } else {
       body.classList.remove('flipped');
       el.classList.remove('is-back');
-      const front = dir==='recog'
-        ? `<div class="word ${d.rtl?'rtl':''}">${esc(c.word)}</div>`+(c.example?`<div class="ex ${d.rtl?'rtl':''}">${highlight(c.example,c.word,d.rtl)}</div>`:'')
+      const frontMain = dir==='recog'
+        ? `<div class="word ${d.rtl?'rtl':''}">${esc(c.word)}</div>`
         : `<div class="word">${esc(c.translation)}</div>`;
-      body.innerHTML = `<div class="face front">${front}<div class="reveal">нажми, чтобы проверить</div></div>`;
+      const frontNote = c.notes ? `<div class="front-note">${esc(c.notes)}</div>` : '';
+      body.innerHTML = `<div class="face front">${frontMain}${frontNote}</div>`;
     }
     body.onclick=(e)=>{ e.stopPropagation(); flipTop(); };
     requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.remove('flipping')));
@@ -2204,6 +2371,18 @@ if('speechSynthesis' in window){
   speechSynthesis.onvoiceschanged = loadVoices;
 }
 renderHome();
+async function updateApp(){
+  const btn = event?.currentTarget;
+  if(btn){ btn.disabled=true; btn.textContent='Обновляем…'; }
+  try{
+    if('serviceWorker' in navigator){
+      const reg = await navigator.serviceWorker.getRegistration();
+      if(reg) await reg.update();
+    }
+  }catch(_){ }
+  setTimeout(()=>location.reload(), 250);
+}
+
 if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
 </script>
 </body>
