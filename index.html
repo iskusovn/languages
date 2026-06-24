@@ -1842,7 +1842,23 @@ function seedArabicDeck(){
     save();
   }
 
-  // Если пользователь удалил отдельное слово, не восстанавливаем его автоматически.
+  // Проверяем целостность нового арабского набора: в словаре должны быть все 17 карточек.
+  // Это исправляет старые версии, где часть слов могла не добавиться из-за сохранённого состояния.
+  let addedMissing = false;
+  const existingArabic = new Set(state.cards.filter(c=>c.deck==='ar').map(c=>(c.word||'').trim()));
+  SEED_AR.forEach((v,i)=>{
+    if(existingArabic.has(v.w.trim())) return;
+    state.cards.push({
+      id:'ar_restore_'+i+'_'+uid(), deck:'ar', word:v.w, translation:v.t,
+      example:'', exampleTr:'', notes:v.n,
+      box:0, due:now(), created:now(), reps:0, lapses:0, lastReview:null
+    });
+    addedMissing = true;
+  });
+  if(addedMissing){
+    state.arabicQuestionSet_complete_v4 = true;
+    save();
+  }
 }
 
 function seedDeck(){
@@ -2098,10 +2114,12 @@ function setTrainDeck(id){
   markTrainDeck(); startTrain();
 }
 function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
-function buildQueue(includeAll=false){
-  let pool = trainDeck ? cardsOf(trainDeck) : state.cards.slice();
+function buildQueue(includeAll=true){
+  const pool = trainDeck ? cardsOf(trainDeck) : state.cards.slice();
+  // В тренировке доступны все слова выбранного языка, включая уже отмеченные как «Помню».
+  // Интервалы сохраняются для статистики, но не скрывают карточки из ручного прохождения.
   const chosen = includeAll ? pool : dueCards(pool);
-  return shuffle(chosen.slice()).slice(0, 60);
+  return shuffle(chosen.slice());
 }
 function restartCurrentDeck(){
   sessionAllMode=true;
@@ -2123,7 +2141,7 @@ function startTrain(){
   const arrow = dir==='recog' ? 'слово → перевод' : 'перевод → слово';
   document.getElementById('trainCtx').textContent = (d? d.name : 'Все языки')+' · '+arrow;
   const hint=document.getElementById('trainHint'); if(hint) hint.style.display = state.hintSeen ? 'none' : '';
-  sessionAllMode=false; queue = buildQueue(false); flipped=false; renderStage();
+  sessionAllMode=true; queue = buildQueue(true); flipped=false; renderStage();
 }
 function dismissHint(){ state.hintSeen=true; save(); const h=document.getElementById('trainHint'); if(h) h.style.display='none'; }
 function renderStage(){
@@ -2132,7 +2150,7 @@ function renderStage(){
   if(!queue.length){
     const total = trainDeck ? cardsOf(trainDeck).length : state.cards.length;
     stage.innerHTML = total
-      ? `<div class="empty"><div class="mk">✓</div><h3>Колода закончилась</h3><p>Можно пройти её ещё раз. Слова, которые ты не помнишь, будут возвращаться через 1–2 карточки.</p><button class="btn" style="width:auto;padding-left:26px;padding-right:26px" onclick="restartCurrentDeck()">Пройти ещё раз</button><button class="linkbtn" style="margin-top:14px" onclick="go('add')">Добавить слово</button></div>`
+      ? `<div class="empty"><div class="mk">✓</div><h3>Колода закончилась</h3><p>Можно пройти её ещё раз. Слова, которые ты не помнишь, возвращаются в конец текущей колоды. Все слова можно проходить заново независимо от интервала.</p><button class="btn" style="width:auto;padding-left:26px;padding-right:26px" onclick="restartCurrentDeck()">Пройти ещё раз</button><button class="linkbtn" style="margin-top:14px" onclick="go('add')">Добавить слово</button></div>`
       : `<div class="empty"><div class="mk">✦</div><h3>Пока пусто</h3><p>Добавь первые слова, и они появятся здесь для тренировки.</p><button class="btn" style="width:auto;padding-left:26px;padding-right:26px" onclick="go('add')">Добавить слово</button></div>`;
     return;
   }
@@ -2311,9 +2329,10 @@ function applyGrade(c, g){
   if(g==='forgot'){
     c.lapses=(c.lapses||0)+1; c.box=0; c.due=now();
     queue.shift();
-    const returnAfter = Math.min(queue.length, 1 + Math.floor(Math.random()*2));
-    queue.splice(returnAfter,0,c);
-    msg='Не помню · вернётся через '+returnAfter+' '+plural(returnAfter,'карточку','карточки','карточек');
+    queue.push(c);
+    msg = queue.length > 1
+      ? 'Не помню · карточка вернётся в конце колоды'
+      : 'Не помню · карточка повторится ещё раз';
   } else {
     c.box = Math.min((c.box||0)+(g==='easy'?2:1), INTERVALS.length-1);
     c.due = now() + INTERVALS[c.box]*DAY; queue.shift();
